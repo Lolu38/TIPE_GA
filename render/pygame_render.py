@@ -26,8 +26,8 @@ class PygameRenderer:
             4
         )
 
-        if track is not None:
-            self.draw_inside_map(track)
+        """if track is not None: # Pour se servir des couleurs pour différencier
+            self.draw_inside_map(track)""" 
 
         # Murs d'abord
         if walls is not None:
@@ -81,7 +81,7 @@ class PygameRenderer:
                 3
             )
 
-    def draw_inside_map(self, track, step=5): #Objectif : distinguer le dehors du dedans en visuel, et vérification / débogage
+    """def draw_inside_map(self, track, step=5): #Objectif : distinguer le dehors du dedans en visuel, et vérification / débogage, le retirer quand il n'est plus nécessaire
         for x in range(0, WIDTH, step):
             for y in range(0, HEIGHT, step):
                 wx = (x - OFFSET_X) / SCALE
@@ -92,5 +92,5 @@ class PygameRenderer:
                 else:
                     color = (40, 120, 40)   # vert pour le dehors
 
-                self.screen.fill(color, (x, y, step, step))
+                self.screen.fill(color, (x, y, step, step))"""
 
