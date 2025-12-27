@@ -1,0 +1,29 @@
+from envs.car_env import SimpleCarEnv
+from tracks.nascar_ring import get_walls as gw_nascar, get_spawn as gs_nascar
+from tracks.simple_rectangle import get_walls as gw_rec, get_spawn as gs_rec
+from tracks.track_geometry import RectangularTrack, AngularTrack
+
+# ---------- Création des environnements ---------- 
+walls1 = gw_rec()
+spawn1 = gs_rec()
+track1 = RectangularTrack(walls1)
+# --- Rectangle pour le numéro 1 ---
+
+outer, inner = gw_nascar()
+spawn2 = gs_nascar()
+track2 = AngularTrack(outer, inner)
+walls2 = [(outer[i], outer[i+1]) for i in range (len(outer)-1)] + [(inner[i], inner[i+1]) for i in range (len(inner)-1)]
+# --- Nascar pour le numéro 2 ---
+
+#env = SimpleCarEnv(spawn = spawn1, walls = walls1, track = track1, render_mode = "human")
+env = SimpleCarEnv(spawn = spawn2, walls = walls2, track = track2, render_mode = "human")
+
+obs, _ = env.reset()
+
+for _ in range(1000):
+    action = env.action_space.sample()
+    obs, reward, terminated, truncated, _ = env.step(action)
+    if terminated:
+        break
+
+env.close()
