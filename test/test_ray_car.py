@@ -23,5 +23,8 @@ obs, _ = env.reset()
 
 
 for _ in range(1000):
-    action = [0.0, 0.0]   # aucune dynamique
+    action = env.action_space.sample() # Pour faire un peu de l'aléatoire et mieux tester le tout #1  # aucune dynamique
     env.step(action)
+    obs, reward, terminated, truncated, _ = env.step(action)
+    if terminated or truncated:
+        break

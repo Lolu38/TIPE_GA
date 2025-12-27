@@ -54,7 +54,7 @@ def ray_segment_intersection(origin, direction, A, B, eps=1e-9):
     return t#, u # On rajoute u afin de savoir où se truve l'intersection sur le mur et pouvoir le notifier dans l'affichage
 
 def ray_distance(O, D, walls, max_dist=300):
-    max_dist
+    max_dist = 300
 
     for (A, B) in walls:
         t = ray_segment_intersection(O, D, A, B)

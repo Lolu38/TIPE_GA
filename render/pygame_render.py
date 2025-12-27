@@ -53,14 +53,17 @@ class PygameRenderer:
 
         # Rayons
         if rays is not None and ray_distance is not None:
-            for ((ox, oy), (dx, dy)), d in zip(rays, ray_distance):
+            for ray, d in zip(rays, ray_distance):
+                ox, oy = ray["origin"]
+                dx, dy = ray["direction"]
+
                 ex = ox + dx * d
                 ey = oy + dy * d
                 pygame.draw.line(
                     self.screen,
                     (255, 255, 0),
-                    (ox, oy),
-                    (ex, ey),
+                    (ox * SCALE + OFFSET_X, oy * SCALE + OFFSET_Y),
+                    (ex * SCALE + OFFSET_X, ey * SCALE + OFFSET_Y),
                     1
                 )
 

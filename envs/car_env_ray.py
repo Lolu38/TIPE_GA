@@ -61,7 +61,7 @@ class SimpleCarEnv(gym.Env):
         self.y += self.v * math.sin(self.theta)
         
         self.rays = generate_rays((self.x, self.y), self.theta, self.nbr_rays)
-        self.ray_distance = [ray_distance((self.x, self.y), (dx, dy), self.walls) for(_, (dx,dy)) in self.rays]
+        self.ray_distance = [ray_distance(ray["origin"], ray["direction"], self.walls) for ray in self.rays]
 
         terminated = self._collision()
         reward = -100 if terminated else 1
