@@ -51,7 +51,7 @@ control_points = [
 
 ]
 
-curve = catmull_rom_spline(control_points, n_points_per_segment=25)
+curve = catmull_rom_spline(control_points, n_points_per_segment=50)
 
 running = True
 while running:
