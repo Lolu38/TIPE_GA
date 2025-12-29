@@ -1,12 +1,11 @@
 import gymnasium as gym
 from learnings.validation.q_agent import QAgent
-from env.car_env_ray import SimpleCarEnv
 from envs.car_env_ray import SimpleCarEnv
 from tracks.nascar_ring import get_walls as gw_nascar, get_spawn as gs_nascar
 from tracks.simple_rectangle import get_walls as gw_rec, get_spawn as gs_rec
 from tracks.high_speed_ring_gt import get_center_line as gcl1, get_spawn as gs_gt
 from tracks.track_geometry import RectangularTrack, AngularTrack, generate_walls
-from tracks.Catmull_Rom_geometry import catmull_rom_spline
+from learnings.validation.mean_score import get_mean
 
 outer1, inner1 = gw_nascar()
 spawn = gs_nascar()
@@ -31,7 +30,9 @@ agent = QAgent(
 )
 
 N_EPISODES = 500
-MAX_STEPS = 500
+MAX_STEPS = 300
+tab_reward = []
+slices = 50
 
 for episode in range(N_EPISODES):
     state, _ = env.reset()
@@ -50,13 +51,19 @@ for episode in range(N_EPISODES):
             break
 
     agent.decay()
-
-    if episode % 50 == 0:
+    tab_reward.append(total_reward)
+    if episode > 0 and episode % 10 == 0:
         print(
             f"Episode {episode} | "
             f"Reward: {total_reward:.1f} | "
             f"Epsilon: {agent.epsilon:.3f} | "
             f"Alpha: {agent.alpha:.3f}"
         )
+
+tab_max, tab_min, mean_slices, overall_max, overall_min, overall_mean = get_mean(tab_reward)
+
+for i in range(0,len(tab_max)):
+    print(f"De {i} à {i*slices + slices}: Max: {tab_max[i]} | Min: {tab_min[i]} | Moyenne: {mean_slices[i]}")
+print(f"Maximum: {overall_max} | Minimum: {overall_min}, | Score moyen: {overall_mean}")
 
 env.close()

@@ -28,7 +28,7 @@ class QAgent:
         self.alpha_decay = alpha_decay
 
     def select_action(self, state):
-        """Politique ε-greedy"""
+        """Politique epsilon-greedy"""
         if random.random() < self.epsilon:
             return self.action_space.sample()
         return np.argmax(self.Q[tuple(state)])
