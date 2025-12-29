@@ -19,13 +19,13 @@ walls2 = [(outer1[i], outer1[i+1]) for i in range (len(outer1)-1)] + [(inner1[i]
 
 control_points = gcl1()
 centerline = catmull_rom_spline(control_points)
-outer2, inner2, _ = generate_walls (centerline)
+outer2, inner2, width1 = generate_walls (centerline)
 track3 = AngularTrack(outer2, inner2)
 walls3 = [(outer2[i], outer2[i+1]) for i in range (len(outer2)-1)] + [(inner2[i], inner2[i+1]) for i in range (len(inner2)-1)]
 spawn3 = gs_gt()
 # --- high speed ring in Gran Turismo for 3
 
-env = SimpleCarEnv(spawn3, walls3, track3, 5, render_mode="human")
+env = SimpleCarEnv(spawn3, walls3, track3, width1, 5, render_mode=None)
 obs, _ = env.reset()
 
 
