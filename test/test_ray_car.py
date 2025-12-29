@@ -1,6 +1,3 @@
-import math
-import pygame
-from learnings.ray_casting.intersections import ray_segment_intersection
 from envs.car_env_ray import SimpleCarEnv
 from tracks.nascar_ring import get_walls as gw_nascar, get_spawn as gs_nascar
 from tracks.simple_rectangle import get_walls as gw_rec, get_spawn as gs_rec

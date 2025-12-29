@@ -1,3 +1,7 @@
+import math
+import numpy as np
+
+
 class RectangularTrack:
     def __init__(self, walls):
         self.outer_bounds = self._extract_bounds(walls[:4])
@@ -47,3 +51,48 @@ class AngularTrack:
                 if x < xinters:
                     inside = not inside
         return inside
+
+def compute_track_length(centerline):
+    length = 0.0
+    for i in range(len(centerline)):
+        x1, y1 = centerline[i]
+        x2, y2 = centerline[(i + 1) % len(centerline)]
+        length += math.hypot(x2 - x1, y2 - y1)
+    return length
+
+
+def generate_walls(centerline, width_ratio=0.01):
+    """
+    centerline : list of (x, y)
+    width_ratio : largeur relative au circuit
+    """
+    pts = np.asarray(centerline, dtype=float)
+    n = len(pts)
+
+    track_length = compute_track_length(centerline)
+    width = width_ratio * track_length
+
+    left_wall = []
+    right_wall = []
+
+    for i in range(n):
+        p_prev = pts[i - 1]
+        p_next = pts[(i + 1) % n]
+
+        tangent = p_next - p_prev
+        norm = np.linalg.norm(tangent)
+
+        if norm < 1e-9:
+            raise ValueError(f"Tangente nulle au point {i}")
+
+        tangent /= norm
+        normal = np.array([-tangent[1], tangent[0]])
+
+        center = pts[i]
+        left = center + width * normal
+        right = center - width * normal
+
+        left_wall.append(tuple(left))
+        right_wall.append(tuple(right))
+
+    return left_wall, right_wall, width
