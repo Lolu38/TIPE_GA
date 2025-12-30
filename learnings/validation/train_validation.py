@@ -1,6 +1,5 @@
-import gymnasium as gym
 from learnings.validation.q_agent import QAgent
-from envs.car_env_ray import SimpleCarEnv
+from envs.car_env_reward import SimpleCarEnv
 from tracks.nascar_ring import get_walls as gw_nascar, get_spawn as gs_nascar
 from tracks.simple_rectangle import get_walls as gw_rec, get_spawn as gs_rec
 from tracks.high_speed_ring_gt import get_center_line as gcl1, get_spawn as gs_gt
@@ -63,7 +62,36 @@ for episode in range(N_EPISODES):
 tab_max, tab_min, mean_slices, overall_max, overall_min, overall_mean = get_mean(tab_reward, slices)
 
 for i in range(0,len(tab_max)):
-    print(f"De {i} à {i*slices + slices}: Max: {tab_max[i]} | Min: {tab_min[i]} | Moyenne: {mean_slices[i]}")
+    print(f"De {i*slices} à {i*slices + slices}: Max: {tab_max[i]} | Min: {tab_min[i]} | Moyenne: {mean_slices[i]}")
 print(f"Maximum: {overall_max} | Minimum: {overall_min}, | Score moyen: {overall_mean}")
+
+env_show = SimpleCarEnv(
+    spawn=spawn,
+    walls=walls,
+    track=track,
+    track_width=None,
+    nbr_rays=5,
+    render_mode=None
+)
+
+agent_show = QAgent(
+    obs_space=env.observation_space,
+    action_space=env.action_space,
+    alpha=0.2,
+    gamma=0.99,
+    epsilon=1.0
+)
+
+state, _ = env.reset()
+for step in range(MAX_STEPS):
+    action_show = agent.select_action(state)
+    next_state, reward, terminated, truncated, _ = env.step(action)
+
+    agent.update(state, action, reward, next_state, terminated)
+
+    state = next_state
+
+    if terminated or truncated:
+        break
 
 env.close()
