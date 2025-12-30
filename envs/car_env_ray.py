@@ -15,6 +15,7 @@ class SimpleCarEnv(gym.Env):
         self.spawn = spawn
         self.nbr_rays = nbr_rays
         self.track_width = track_width
+        self.n_dist_bin = 7        
 
         if self.render_mode == "human":
             self.renderer = PygameRenderer()
@@ -27,10 +28,14 @@ class SimpleCarEnv(gym.Env):
 
         # Actions discrètes
         self.action_space = spaces.Discrete(5)
-        # Observation discrète (exemple)
-        self.observation_space = spaces.MultiDiscrete(
-            [5, 5, 5, 5, 8]  # distances + vitesse + angle
-        )
+        # Observation discrète (reliées au nombre de rayons)
+        obs_dims = [self.n_dist_bin] * self.nbr_rays + [5,8]
+        self.observation_space = spaces.MultiDiscrete(obs_dims)  # distances pour chaque rayons + vitesse + angle
+
+        # Init de ray et ray distance comme None, comme ça il n'embête pas pour le _get_obs dans le reset
+        self.rays = None
+        self.ray_distance = [1.0] * self.nbr_rays
+
         self.reset()
 
     def reset(self, seed=None, options=None):
@@ -83,12 +88,16 @@ class SimpleCarEnv(gym.Env):
 
     def _get_obs(self):
         # Version simplifiée pour l’instant
-        d_left = 2
-        d_front = 2
-        d_right = 2
+        if self.nbr_rays is not None:
+            dist_bins = self._discretize_distances()
+        else:
+            dist_bins = [self.n_dist_bin - 1] * self.nbr_rays
+
         v_bin = min(int(self.v), 4)
         theta_bin = int((self.theta % (2*math.pi)) / (2*math.pi / 8))
-        return np.array([d_left, d_front, d_right, v_bin, theta_bin])
+        theta_bin = min(theta_bin, 7)
+
+        return np.array(dist_bins + [v_bin, theta_bin], dtype=int) 
 
     def _collision(self): 
         return not self.track.is_inside(self.x, self.y) 
@@ -97,4 +106,13 @@ class SimpleCarEnv(gym.Env):
         if self.renderer:
             self.renderer.close()
     
+    def _discretize_distances(self):
+        if self.ray_distance is not None:
+            return [
+                min(int(d * self.n_dist_bin), self.n_dist_bin - 1)
+                for d in self.ray_distance
+            ]
+        else:
+            return [None]
+
 

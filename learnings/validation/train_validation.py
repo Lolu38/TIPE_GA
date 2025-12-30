@@ -52,7 +52,7 @@ for episode in range(N_EPISODES):
 
     agent.decay()
     tab_reward.append(total_reward)
-    if episode > 0 and episode % 10 == 0:
+    if episode > 0 and episode % 30 == 0:
         print(
             f"Episode {episode} | "
             f"Reward: {total_reward:.1f} | "
@@ -60,7 +60,7 @@ for episode in range(N_EPISODES):
             f"Alpha: {agent.alpha:.3f}"
         )
 
-tab_max, tab_min, mean_slices, overall_max, overall_min, overall_mean = get_mean(tab_reward)
+tab_max, tab_min, mean_slices, overall_max, overall_min, overall_mean = get_mean(tab_reward, slices)
 
 for i in range(0,len(tab_max)):
     print(f"De {i} à {i*slices + slices}: Max: {tab_max[i]} | Min: {tab_min[i]} | Moyenne: {mean_slices[i]}")

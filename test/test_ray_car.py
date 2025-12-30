@@ -15,7 +15,7 @@ track2 = AngularTrack(outer, inner)
 walls2 = [(outer[i], outer[i+1]) for i in range (len(outer)-1)] + [(inner[i], inner[i+1]) for i in range (len(inner)-1)]
 # --- nascar for the number 2 ---
 
-env = SimpleCarEnv(spawn1, walls1, track1, 5, render_mode="human")
+env = SimpleCarEnv(spawn1, walls1, track1, nbr_rays=5, render_mode="human")
 obs, _ = env.reset()
 
 
