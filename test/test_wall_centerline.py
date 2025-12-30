@@ -25,7 +25,7 @@ walls3 = [(outer2[i], outer2[i+1]) for i in range (len(outer2)-1)] + [(inner2[i]
 spawn3 = gs_gt()
 # --- high speed ring in Gran Turismo for 3
 
-env = SimpleCarEnv(spawn3, walls3, track3, width1, 5, render_mode=None)
+env = SimpleCarEnv(spawn3, walls3, track3, width1, 5, render_mode="human")
 obs, _ = env.reset()
 
 

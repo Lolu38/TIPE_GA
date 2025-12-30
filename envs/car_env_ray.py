@@ -63,9 +63,10 @@ class SimpleCarEnv(gym.Env):
         
         self.rays = generate_rays((self.x, self.y), self.theta, self.nbr_rays)
         self.ray_distance = [ray_distance(ray["origin"], ray["direction"], self.walls) for ray in self.rays]
+
         if self.track_width is not None:
             max_range = 3.0 * self.track_width
-            self.ray_distance = [min(d/max_range, 1.0) for d in self.ray_distance]
+            self.ray_distance_norm = [min(d/max_range, 1.0) for d in self.ray_distance]
 
         terminated = self._collision()
         reward = -100 if terminated else 1
