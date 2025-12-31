@@ -11,6 +11,13 @@ spawn = gs_nascar()
 track = AngularTrack(outer1, inner1)
 walls = [(outer1[i], outer1[i+1]) for i in range (len(outer1)-1)] + [(inner1[i], inner1[i+1]) for i in range (len(inner1)-1)]
 
+"""control_points = gcl1()
+centerline = catmull_rom_spline(control_points)
+outer, inner, track_width = generate_walls (centerline)
+track = AngularTrack(outer, inner)
+walls = [(outer[i], outer[i+1]) for i in range (len(outer)-1)] + [(inner[i], inner[i+1]) for i in range (len(inner)-1)]
+spawn = gs_gt()"""
+
 env = SimpleCarEnv(
     spawn=spawn,
     walls=walls,
@@ -64,6 +71,7 @@ tab_max, tab_min, mean_slices, overall_max, overall_min, overall_mean = get_mean
 for i in range(0,len(tab_max)):
     print(f"De {i*slices} à {i*slices + slices}: Max: {tab_max[i]} | Min: {tab_min[i]} | Moyenne: {mean_slices[i]}")
 print(f"Maximum: {overall_max} | Minimum: {overall_min}, | Score moyen: {overall_mean}")
+env.close()
 
 env_show = SimpleCarEnv(
     spawn=spawn,
@@ -71,7 +79,7 @@ env_show = SimpleCarEnv(
     track=track,
     track_width=None,
     nbr_rays=5,
-    render_mode=None
+    render_mode="human"
 )
 
 agent_show = QAgent(
@@ -84,14 +92,15 @@ agent_show = QAgent(
 
 state, _ = env.reset()
 for step in range(MAX_STEPS):
-    action_show = agent.select_action(state)
-    next_state, reward, terminated, truncated, _ = env.step(action)
+    action_show = agent_show.select_action(state)
+    next_state, reward, terminated, truncated, _ = env_show.step(action)
 
-    agent.update(state, action, reward, next_state, terminated)
+    agent_show.update(state, action, reward, next_state, terminated)
 
     state = next_state
 
     if terminated or truncated:
         break
 
-env.close()
+env_show.close()
+
