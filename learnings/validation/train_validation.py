@@ -5,26 +5,27 @@ from tracks.simple_rectangle import get_walls as gw_rec, get_spawn as gs_rec
 from tracks.high_speed_ring_gt import get_center_line as gcl1, get_spawn as gs_gt
 from tracks.track_geometry import RectangularTrack, AngularTrack, generate_walls
 from learnings.validation.mean_score import get_mean
+from tracks.Catmull_Rom_geometry import catmull_rom_spline
 
-outer1, inner1 = gw_nascar()
+"""outer1, inner1 = gw_nascar()
 spawn = gs_nascar()
 track = AngularTrack(outer1, inner1)
 walls = [(outer1[i], outer1[i+1]) for i in range (len(outer1)-1)] + [(inner1[i], inner1[i+1]) for i in range (len(inner1)-1)]
-
-"""control_points = gcl1()
+"""
+control_points = gcl1()
 centerline = catmull_rom_spline(control_points)
 outer, inner, track_width = generate_walls (centerline)
 track = AngularTrack(outer, inner)
 walls = [(outer[i], outer[i+1]) for i in range (len(outer)-1)] + [(inner[i], inner[i+1]) for i in range (len(inner)-1)]
-spawn = gs_gt()"""
+spawn = gs_gt()
 
 env = SimpleCarEnv(
     spawn=spawn,
     walls=walls,
     track=track,
-    track_width=None,
+    track_width=track_width,
     nbr_rays=5,
-    render_mode="human"
+    render_mode=None
 )
 
 agent = QAgent(
