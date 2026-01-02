@@ -24,7 +24,7 @@ env = SimpleCarEnv(
     track=track,
     track_width=None,
     nbr_rays=5,
-    render_mode=None
+    render_mode="human"
 )
 
 agent = QAgent(
