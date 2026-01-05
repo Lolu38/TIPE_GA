@@ -1,7 +1,6 @@
 import math
 import numpy as np
-from learnings.ray_casting.spatial_grid import SpatialGrid
-
+#from learnings.ray_casting.spatial_grid import SpatialGrid
 
 class RectangularTrack:
     def __init__(self, walls):
@@ -37,12 +36,12 @@ class AngularTrack:
 
         
         # Création des cellules
-        self.grid = SpatialGrid([], cells_size)
+        """self.grid = SpatialGrid([], cells_size)
         for polygon in (self.outer, self.inner):
             for i in range(len(polygon) - 1):
                 A = polygon[i]
                 B = polygon[i + 1]
-                self.grid.insert_wall((A, B))
+                self.grid.insert_wall((A, B))"""
 
 
     def is_inside(self, x, y):
@@ -63,8 +62,8 @@ class AngularTrack:
                     inside = not inside
         return inside
     
-    def get_grid(self):
-        return self.grid
+    """def get_grid(self):
+        return self.grid"""
 
 def compute_track_length(centerline):
     length = 0.0
@@ -112,3 +111,12 @@ def generate_walls(centerline, width_ratio=0.01):
 
     return left_wall, right_wall, width
 
+def build_walls_with_aabb(walls):
+    walls_aabb = []
+    for A, B in walls:
+        xmin = min(A[0], B[0])
+        xmax = max(A[0], B[0])
+        ymin = min(A[1], B[1])
+        ymax = max(A[1], B[1])
+        walls_aabb.append((A, B, xmin, xmax, ymin, ymax))
+    return walls_aabb

@@ -19,7 +19,6 @@ control_points = gcl1()
 centerline = catmull_rom_spline(control_points)
 outer, inner, track_width = generate_walls (centerline)
 track = AngularTrack(outer, inner, cells_size)
-grid = track.get_grid()
 walls = [(outer[i], outer[i+1]) for i in range (len(outer)-1)] + [(inner[i], inner[i+1]) for i in range (len(inner)-1)]
 spawn = gs_gt()
 
@@ -27,7 +26,6 @@ env = SimpleCarEnv(
     spawn=spawn,
     walls=walls,
     track=track,
-    grid=grid,
     track_width=track_width,
     nbr_rays=5,
     render_mode=None
