@@ -75,7 +75,7 @@ class PygameRenderer:
         pygame.quit()
 
     def draw_walls(self, walls):
-        for (x1, y1), (x2, y2) in walls:
+        for ((x1, y1), (x2, y2)) in walls:
             pygame.draw.line(
                 self.screen,
                 (255, 255, 255),

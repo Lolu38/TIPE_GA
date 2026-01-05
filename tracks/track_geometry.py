@@ -30,7 +30,7 @@ class RectangularTrack:
         return True
 
 class AngularTrack:
-    def __init__(self, outer_walls, inner_walls, cells_size):
+    def __init__(self, outer_walls, inner_walls):
         self.outer = outer_walls
         self.inner = inner_walls
 
