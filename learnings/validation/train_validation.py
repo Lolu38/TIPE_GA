@@ -85,20 +85,12 @@ env_show = SimpleCarEnv(
     render_mode="human"
 )
 
-agent_show = QAgent(
-    obs_space=env.observation_space,
-    action_space=env.action_space,
-    alpha=0.2,
-    gamma=0.99,
-    epsilon=1.0
-)
-
 state, _ = env.reset()
 for step in range(MAX_STEPS):
-    action_show = agent_show.select_action(state)
+    action_show = agent.select_action(state)
     next_state, reward, terminated, truncated, _ = env_show.step(action)
 
-    agent_show.update(state, action, reward, next_state, terminated)
+    agent.update(state, action, reward, next_state, terminated)
 
     state = next_state
 
