@@ -7,15 +7,19 @@ from tracks.track_geometry import RectangularTrack, AngularTrack, generate_walls
 from learnings.validation.mean_score import get_mean
 from tracks.Catmull_Rom_geometry import catmull_rom_spline
 
+cells_size = 5
+
 """outer1, inner1 = gw_nascar()
 spawn = gs_nascar()
-track = AngularTrack(outer1, inner1)
+track = AngularTrack(outer1, inner1, cells_size)
+grid = track.get_grid()
 walls = [(outer1[i], outer1[i+1]) for i in range (len(outer1)-1)] + [(inner1[i], inner1[i+1]) for i in range (len(inner1)-1)]
 """
 control_points = gcl1()
 centerline = catmull_rom_spline(control_points)
 outer, inner, track_width = generate_walls (centerline)
-track = AngularTrack(outer, inner)
+track = AngularTrack(outer, inner, cells_size)
+grid = track.get_grid()
 walls = [(outer[i], outer[i+1]) for i in range (len(outer)-1)] + [(inner[i], inner[i+1]) for i in range (len(inner)-1)]
 spawn = gs_gt()
 
@@ -23,6 +27,7 @@ env = SimpleCarEnv(
     spawn=spawn,
     walls=walls,
     track=track,
+    grid=grid,
     track_width=track_width,
     nbr_rays=5,
     render_mode=None

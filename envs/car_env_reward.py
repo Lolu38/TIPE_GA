@@ -9,13 +9,14 @@ from learnings.ray_casting.intersections import ray_distance
 class SimpleCarEnv(gym.Env):
     metadata = {"render_modes": ["human", None]}
 
-    def __init__(self, spawn, walls, track, track_width=None, nbr_rays=None, render_mode=None):
+    def __init__(self, spawn, walls, track, grid=None, track_width=None, nbr_rays=None, render_mode=None):
         super().__init__()
         self.render_mode = render_mode
         self.spawn = spawn
         self.nbr_rays = nbr_rays
         self.track_width = track_width
-        self.n_dist_bin = 7        
+        self.n_dist_bin = 7
+        self.grid = grid        
 
         if self.render_mode == "human":
             self.renderer = PygameRenderer()
@@ -69,7 +70,7 @@ class SimpleCarEnv(gym.Env):
         self.y += self.v * math.sin(self.theta)
         
         self.rays = generate_rays((self.x, self.y), self.theta, self.nbr_rays)
-        self.ray_distance = [ray_distance(ray["origin"], ray["direction"], self.walls) for ray in self.rays]
+        self.ray_distance = [ray_distance(ray["origin"], ray["direction"], self.walls, self.grid) for ray in self.rays]
 
         if self.track_width is not None:
             max_range = 3.0 * self.track_width

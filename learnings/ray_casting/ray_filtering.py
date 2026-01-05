@@ -52,4 +52,8 @@ def filter_walls(O, D, walls, max_dist):
 
     return filtered
 
+# Cette méthode n'étais pas la bonne, elle ne nous permettait pas de 
+# gagner du temps: le temps qu'on gagnait à ne pas vérifier était identique
+# au temps perdu lors des calculs: il faut donc passer au hachage spatiale
+
 

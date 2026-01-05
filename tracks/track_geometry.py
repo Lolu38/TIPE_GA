@@ -1,5 +1,6 @@
 import math
 import numpy as np
+from learnings.ray_casting.spatial_grid import SpatialGrid
 
 
 class RectangularTrack:
@@ -30,9 +31,19 @@ class RectangularTrack:
         return True
 
 class AngularTrack:
-    def __init__(self, outer_walls, inner_walls):
+    def __init__(self, outer_walls, inner_walls, cells_size):
         self.outer = outer_walls
         self.inner = inner_walls
+
+        
+        # Création des cellules
+        self.grid = SpatialGrid([], cells_size)
+        for polygon in (self.outer, self.inner):
+            for i in range(len(polygon) - 1):
+                A = polygon[i]
+                B = polygon[i + 1]
+                self.grid.insert_wall((A, B))
+
 
     def is_inside(self, x, y):
         return (
@@ -51,6 +62,9 @@ class AngularTrack:
                 if x < xinters:
                     inside = not inside
         return inside
+    
+    def get_grid(self):
+        return self.grid
 
 def compute_track_length(centerline):
     length = 0.0
@@ -60,6 +74,7 @@ def compute_track_length(centerline):
         length += math.hypot(x2 - x1, y2 - y1)
     return length
 
+    
 
 def generate_walls(centerline, width_ratio=0.01):
     """
@@ -96,3 +111,4 @@ def generate_walls(centerline, width_ratio=0.01):
         right_wall.append(tuple(right))
 
     return left_wall, right_wall, width
+

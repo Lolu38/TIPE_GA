@@ -1,4 +1,5 @@
 from learnings.ray_casting.ray_filtering import filter_walls
+from learnings.ray_casting.spatial_grid import SpatialGrid
 
 def ray_segment_intersection(origin, direction, A, B, eps=1e-9):
     """
@@ -53,11 +54,12 @@ def ray_segment_intersection(origin, direction, A, B, eps=1e-9):
     #print(t)
     return t#, u # On rajoute u afin de savoir où se truve l'intersection sur le mur et pouvoir le notifier dans l'affichage
 
-def ray_distance(O, D, walls, max_dist=300):
+def ray_distance(O, D, walls, grid, max_dist=300):
+    ox, oy = O
     max_dist = float(max_dist)
     
-    walls_candidates = filter_walls(O,D, walls, max_dist)
-    #print(len(walls), " -> ", len(walls_candidates))
+    walls_candidates = grid.query(ox, oy, max_dist)
+    print(len(walls), " -> ", len(walls_candidates))
     
     for (A, B) in walls_candidates:
         t = ray_segment_intersection(O, D, A, B)
