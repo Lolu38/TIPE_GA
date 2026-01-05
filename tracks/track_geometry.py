@@ -120,3 +120,14 @@ def build_walls_with_aabb(walls):
         ymax = max(A[1], B[1])
         walls_aabb.append((A, B, xmin, xmax, ymin, ymax))
     return walls_aabb
+
+def compute_centerline(inner, outer):
+    assert len(inner) == len(outer), "Inner et outer doivent avoir la même taille"
+
+    centerline = []
+    for (xi, yi), (xo, yo) in zip(inner, outer):
+        cx = 0.5 * (xi + xo)
+        cy = 0.5 * (yi + yo)
+        centerline.append((cx, cy))
+
+    return centerline

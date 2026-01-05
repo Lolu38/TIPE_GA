@@ -6,18 +6,20 @@ from render.pygame_render import PygameRenderer
 from learnings.ray_casting.ray_lauchement import generate_rays
 from learnings.ray_casting.intersections import ray_distance
 from tracks.track_geometry import build_walls_with_aabb
+from envs.rewards.progress_reward import ProgressReward
 
 class SimpleCarEnv(gym.Env):
     metadata = {"render_modes": ["human", None]}
 
-    def __init__(self, spawn, walls, track, track_width=None, nbr_rays=None, render_mode=None):
+    def __init__(self, spawn, walls, track, centerline, track_width=None, nbr_rays=None, render_mode=None):
         super().__init__()
         self.render_mode = render_mode
         self.spawn = spawn
         self.nbr_rays = nbr_rays
         self.track_width = track_width
         self.n_dist_bin = 7
-
+        self.centerline = centerline
+        self.reward_fn = ProgressReward(self.centerline)
 
         if self.render_mode == "human":
             self.renderer = PygameRenderer()
@@ -48,12 +50,11 @@ class SimpleCarEnv(gym.Env):
         self.steps = 0
 
         obs = self._get_obs()
+        self.reward_fn.reset({"position" : (self.x, self.y)})
         return obs, {}
 
     def step(self, action):
         self.steps += 1
-        stagnation_penalty = 0.1
-        v_eps = 0.05
 
         # Actions
         if action == 0:
@@ -78,13 +79,10 @@ class SimpleCarEnv(gym.Env):
             self.ray_distance_norm = [min(d/max_range, 1.0) for d in self.ray_distance]
 
         terminated = self._collision()
-        reward = 0
-        if terminated:
-            reward = -100
-        else:
-            reward = 1.0
-            if abs(self.v) < v_eps:
-                reward -= stagnation_penalty
+        car_state = {"position": (self.x, self.y),
+                     "speed": self.v,
+                     "heading": self.theta}
+        reward = self.reward_fn.step(car_state, terminated)
 
 
         obs = self._get_obs()

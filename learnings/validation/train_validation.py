@@ -3,7 +3,7 @@ from envs.car_env_reward import SimpleCarEnv
 from tracks.nascar_ring import get_walls as gw_nascar, get_spawn as gs_nascar
 from tracks.simple_rectangle import get_walls as gw_rec, get_spawn as gs_rec
 from tracks.high_speed_ring_gt import get_center_line as gcl1, get_spawn as gs_gt
-from tracks.track_geometry import RectangularTrack, AngularTrack, generate_walls
+from tracks.track_geometry import RectangularTrack, AngularTrack, generate_walls, compute_centerline
 from learnings.validation.mean_score import get_mean
 from tracks.Catmull_Rom_geometry import catmull_rom_spline
 
@@ -12,6 +12,7 @@ from tracks.Catmull_Rom_geometry import catmull_rom_spline
 outer1, inner1 = gw_nascar()
 spawn = gs_nascar()
 track = AngularTrack(outer1, inner1)
+centerline = compute_centerline(outer1, inner1)
 walls = [(outer1[i], outer1[i+1]) for i in range (len(outer1)-1)] + [(inner1[i], inner1[i+1]) for i in range (len(inner1)-1)]
 
 """control_points = gcl1()
@@ -25,6 +26,7 @@ env = SimpleCarEnv(
     spawn=spawn,
     walls=walls,
     track=track,
+    centerline=centerline,
     track_width=None,
     nbr_rays=5,
     render_mode=None
@@ -80,6 +82,7 @@ env_show = SimpleCarEnv(
     spawn=spawn,
     walls=walls,
     track=track,
+    centerline=centerline,
     track_width=None,
     nbr_rays=5,
     render_mode="human"
