@@ -59,9 +59,9 @@ class SimpleCarEnv(gym.Env):
 
         # Actions
         if action == 0:
-            self.theta -= 0.
+            self.theta -= 0.2
         elif action == 2:
-            self.theta += 0.3
+            self.theta += 0.2
         elif action == 3:
             self.v += 0.2
         elif action == 4:
