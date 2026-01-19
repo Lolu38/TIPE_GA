@@ -1,12 +1,30 @@
-def closest_point_index(pos, centerline):
-    x, y = pos
-    best_i = 0
-    best_d2 = float("inf")
+import numpy as np
 
-    for i, (cx, cy) in enumerate(centerline):
-        d2 = (x - cx)**2 + (y - cy)**2
-        if d2 < best_d2:
-            best_d2 = d2
-            best_i = i
+def curvilinear_abscissa(pos, centerline):
+    P = np.array(pos)
 
-    return best_i
+    best_s = 0.0
+    best_dist = float("inf")
+    s_acc = 0.0
+
+    for i in range(len(centerline) - 1):
+        A = np.array(centerline[i])
+        B = np.array(centerline[i + 1])
+
+        AB = B - A
+        AP = P - A
+
+        t = np.dot(AP, AB) / (np.dot(AB, AB) + 1e-9)
+        t = np.clip(t, 0.0, 1.0)
+
+        proj = A + t * AB
+        d = np.linalg.norm(P - proj)
+
+        if d < best_dist:
+            best_dist = d
+            best_s = s_acc + t * np.linalg.norm(AB)
+
+        s_acc += np.linalg.norm(AB)
+
+    return best_s
+

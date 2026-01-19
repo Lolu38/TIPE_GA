@@ -20,6 +20,7 @@ class SimpleCarEnv(gym.Env):
         self.n_dist_bin = 7
         self.centerline = centerline
         self.reward_fn = ProgressReward(self.centerline)
+        self.ray_distance_norm = None
 
         if self.render_mode == "human":
             self.renderer = PygameRenderer()
@@ -58,9 +59,9 @@ class SimpleCarEnv(gym.Env):
 
         # Actions
         if action == 0:
-            self.theta -= 0.1
+            self.theta -= 0.
         elif action == 2:
-            self.theta += 0.1
+            self.theta += 0.3
         elif action == 3:
             self.v += 0.2
         elif action == 4:
@@ -81,7 +82,8 @@ class SimpleCarEnv(gym.Env):
         terminated = self._collision()
         car_state = {"position": (self.x, self.y),
                      "speed": self.v,
-                     "heading": self.theta}
+                     "heading": self.theta,
+                     "ray distance": self.ray_distance_norm}
         reward = self.reward_fn.step(car_state, terminated)
 
 
@@ -97,9 +99,10 @@ class SimpleCarEnv(gym.Env):
 
     def _get_obs(self):
         # Version simplifiée pour l’instant
-        if self.nbr_rays is not None:
-            dist_bins = self._discretize_distances()
+        if self.ray_distance_norm is not None:
+            dist_bins = [ int( min(d * self.n_dist_bin, self.n_dist_bin - 1)) for d in self.ray_distance_norm ]
         else:
+            # Cas par défaut si les rayons ne sont pas encore calculés
             dist_bins = [self.n_dist_bin - 1] * self.nbr_rays
 
         v_bin = min(int(self.v), 4)
@@ -114,14 +117,5 @@ class SimpleCarEnv(gym.Env):
     def close(self):
         if self.renderer:
             self.renderer.close()
-    
-    def _discretize_distances(self):
-        if self.ray_distance is not None:
-            return [
-                min(int(d * self.n_dist_bin), self.n_dist_bin - 1)
-                for d in self.ray_distance
-            ]
-        else:
-            return [None]
 
 

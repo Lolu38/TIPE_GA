@@ -9,8 +9,8 @@ class QAgent:
         alpha=0.1,
         gamma=0.99,
         epsilon=1.0,
-        epsilon_min=0.05,
-        epsilon_decay=0.995,
+        epsilon_min=0.10,
+        epsilon_decay=0.997,
         alpha_decay=0.999
     ):
         self.obs_space = obs_space
@@ -49,3 +49,9 @@ class QAgent:
     def decay(self):
         self.epsilon = max(self.epsilon_min, self.epsilon * self.epsilon_decay)
         self.alpha *= self.alpha_decay
+
+    def save(self, path):
+        np.save(path, self.Q)
+
+    def load(self, path):
+        self.Q = np.load(path)

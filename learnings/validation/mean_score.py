@@ -4,6 +4,9 @@ def min_max_slice(tab):
 def mean_slice(tab):
     return sum(tab) / len(tab)
 
+def rounding(tab_nbr):
+    return [round(nbr, 3) for nbr in tab_nbr]
+
 def get_mean(tab, slices):
     tab_max = []
     tab_min = []
@@ -39,4 +42,8 @@ def get_mean(tab, slices):
     overall_min = min(tab)
     overall_mean = mean_slice(tab)
 
-    return tab_max, tab_min, mean_slices, overall_max, overall_min, overall_mean
+    tab_max_round = rounding(tab_max)
+    tab_min_round = rounding(tab_min)
+    mean_slices_round = rounding(mean_slices)
+
+    return tab_max_round, tab_min_round, mean_slices_round, round(overall_max), round(overall_min), round(overall_mean)
