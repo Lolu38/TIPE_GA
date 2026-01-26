@@ -52,7 +52,7 @@ agent = QAgent(
     epsilon=1.0
 )
 
-N_EPISODES = 1500
+N_EPISODES = 2000
 MAX_STEPS = 500
 tab_reward = []
 slices = 200
