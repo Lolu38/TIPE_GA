@@ -1,6 +1,5 @@
 import math
 import numpy as np
-#from learnings.ray_casting.spatial_grid import SpatialGrid
 
 class RectangularTrack:
     def __init__(self, walls):
