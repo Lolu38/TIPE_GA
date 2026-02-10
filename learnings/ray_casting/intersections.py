@@ -1,6 +1,3 @@
-from learnings.ray_casting.ray_filtering import filter_walls
-from learnings.ray_casting.spatial_grid import SpatialGrid
-
 def ray_segment_intersection(origin, direction, A, B, eps=1e-9):
     """
     Calcule l'intersection entre un rayon et un segment.

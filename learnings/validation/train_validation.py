@@ -34,6 +34,8 @@ print(len(centerline), " -> ", len(checkpoint))
 walls = [(outer[i], outer[i+1]) for i in range (len(outer)-1)] + [(inner[i], inner[i+1]) for i in range (len(inner)-1)]
 spawn = gs_gt()"""
 
+
+
 env = SimpleCarEnv(
     spawn=spawn,
     walls=walls,
