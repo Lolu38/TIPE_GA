@@ -46,4 +46,4 @@ def get_center_line():
     return line
 
 def get_spawn():
-    return 50* 8.72289156626506, 1.03125 * 50, 0.0
+    return 50* 8.72289156626506, 1.03125 * 50, -1.0
