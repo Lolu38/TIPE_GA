@@ -32,8 +32,8 @@ def parse_args():
     parser.add_argument('--save_every', type=int, default=10,help='Sauvegarder tous les N générations')    
     parser.add_argument('--device', type=str, default='cuda',choices=['cuda', 'cpu'],help='Device à utiliser')    
     parser.add_argument('--mutation_start', type=float, default=0.3,help='Taux de mutation initial (0.3 = 30%)')    
-    parser.add_argument('--mutation_end', type=float, default=0.01,help='Taux de mutation final (0.001 = 0.1%)')    
-    parser.add_argument('--mutation_decay', type=float, default=0.95,help='Facteur de décroissance de la mutation')    
+    parser.add_argument('--mutation_end', type=float, default=0.05,help='Taux de mutation final (0.001 = 0.1%)')    
+    parser.add_argument('--mutation_decay', type=float, default=0.975,help='Facteur de décroissance de la mutation')    
     parser.add_argument('--checkpoint', type=str, default=None,help='Chemin vers un checkpoint à reprendre')    
     return parser.parse_args()
 
@@ -165,4 +165,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-"""Voici le render que j'avais jusqu'à présent. Tu pourrais m'aider à en créer un que je puisses appeller quand je veux, et qui fasses l'affichage des voitures en temps réel ? Le but serait d'afficher 10% d'entre elles en même temps"""
