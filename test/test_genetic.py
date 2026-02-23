@@ -152,6 +152,8 @@ def main():
     print(f"\nProgression:")
     print(f"Génération 1:   Best={stats['best_fitness_history'][0]:.2f}, Avg={stats['avg_fitness_history'][0]:.2f}")
     print(f"Génération {stats['generation']}: Best={stats['best_fitness_history'][-1]:.2f}, Avg={stats['avg_fitness_history'][-1]:.2f}")
+    print(f"\n{'='*60}")
+    
     
     # Amélioration
     improvement = stats['avg_fitness_history'][-1] / max(stats['avg_fitness_history'][0], 0.01)
@@ -162,3 +164,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+"""Voici le render que j'avais jusqu'à présent. Tu pourrais m'aider à en créer un que je puisses appeller quand je veux, et qui fasses l'affichage des voitures en temps réel ? Le but serait d'afficher 10% d'entre elles en même temps"""
