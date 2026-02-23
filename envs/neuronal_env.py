@@ -190,7 +190,7 @@ class VectorizedCarEnv:
         Returns:
             distances: Tensor (n_cars, n_rays) - distances normalisées
         """
-        from gpu_raycasting import compute_ray_intersections
+        from learnings.ray_casting.gpu_raycasting import compute_ray_intersections
         
         # Angles absolus des rayons pour chaque voiture
         global_ray_angles = self.angle + self.ray_angles
@@ -278,7 +278,7 @@ class VectorizedCarEnv:
         return not self.alive.any()
 
 
-def build_env_from_track_config(track_name='nascar', n_cars=1000, n_rays=7, device='cuda'):
+def build_env_from_track_config(track_name='nascar', n_cars=1000, n_rays=9, device='cuda'):
     """
     Fonction utilitaire pour créer un environnement à partir d'un circuit prédéfini
     

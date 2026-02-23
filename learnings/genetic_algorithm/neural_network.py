@@ -14,12 +14,13 @@ class NeuralAgent(nn.Module):
             - throttle: Sigmoid → [0, 1] (freiner/accélérer)
     """
     
-    def __init__(self, n_rays=7, hidden_size1=16, hidden_size2=8):
+    def __init__(self, n_rays=7, hidden_size1=16, hidden_size2=8, device='cuda'):
         super(NeuralAgent, self).__init__()
         
         self.n_rays = n_rays
         input_size = n_rays + 1  # distances + vitesse
-        
+        self.device = device
+
         # Architecture du réseau
         self.network = nn.Sequential(
             nn.Linear(input_size, hidden_size1),
@@ -86,7 +87,7 @@ class NeuralAgent(nn.Module):
             param.data = genome[offset:offset + numel].view(param.shape)
             offset += numel
     
-    def mutate(self, mutation_rate=0.1, mutation_strength=0.3):
+    def mutate(self, mutation_rate=0.3, mutation_strength=0.1):
         """
         Applique une mutation aléatoire uniforme aux poids
         
@@ -112,8 +113,7 @@ class NeuralAgent(nn.Module):
         Returns:
             NeuralAgent avec les mêmes poids
         """
-        clone = NeuralAgent(n_rays=self.n_rays)
-        clone.load_state_dict(self.state_dict())
+        clone = NeuralAgent(n_rays=self.n_rays, device=self.device).to(self.device)
         return clone
     
     def crossover(self, other, crossover_rate=0.5):
@@ -127,7 +127,7 @@ class NeuralAgent(nn.Module):
         Returns:
             NeuralAgent enfant
         """
-        child = NeuralAgent(n_rays=self.n_rays)
+        child = NeuralAgent(n_rays=self.n_rays, device=self.device).to(self.device)
         
         # Extraire les génomes des deux parents
         genome1 = self.get_genome()

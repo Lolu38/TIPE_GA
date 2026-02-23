@@ -1,0 +1,5 @@
+Circuit: nascar
+Population: 100
+Generations: 10
+Mutation: 0.3 -> 0.01 (decay: 0.95)
+Device: cuda

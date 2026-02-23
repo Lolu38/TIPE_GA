@@ -27,13 +27,13 @@ def parse_args():
     parser.add_argument('--circuit', type=str, default='nascar',choices=['nascar', 'rectangle', 'high_speed_ring'],help='Circuit à utiliser')    
     parser.add_argument('--generations', type=int, default=100,help='Nombre de générations à entraîner')    
     parser.add_argument('--population', type=int, default=1000,help='Taille de la population')    
-    parser.add_argument('--n_rays', type=int, default=7,help='Nombre de rayons de détection')    
+    parser.add_argument('--n_rays', type=int, default=9,help='Nombre de rayons de détection')    
     parser.add_argument('--max_steps', type=int, default=1000,help='Steps max par génération')    
     parser.add_argument('--save_every', type=int, default=10,help='Sauvegarder tous les N générations')    
     parser.add_argument('--device', type=str, default='cuda',choices=['cuda', 'cpu'],help='Device à utiliser')    
     parser.add_argument('--mutation_start', type=float, default=0.3,help='Taux de mutation initial (0.3 = 30%)')    
-    parser.add_argument('--mutation_end', type=float, default=0.001,help='Taux de mutation final (0.001 = 0.1%)')    
-    parser.add_argument('--mutation_decay', type=float, default=0.995,help='Facteur de décroissance de la mutation')    
+    parser.add_argument('--mutation_end', type=float, default=0.01,help='Taux de mutation final (0.001 = 0.1%)')    
+    parser.add_argument('--mutation_decay', type=float, default=0.95,help='Facteur de décroissance de la mutation')    
     parser.add_argument('--checkpoint', type=str, default=None,help='Chemin vers un checkpoint à reprendre')    
     return parser.parse_args()
 
@@ -68,6 +68,7 @@ def main():
         checkpoints=checkpoints,
         spawn_point=(env.spawn_x, env.spawn_y, env.spawn_angle),
         n_cars=args.population,
+        track_width= env.track_width,
         device=args.device
     )
     
@@ -103,8 +104,8 @@ def main():
     with open(config_path, 'w') as f:
         f.write(f"Circuit: {args.circuit}\n")
         f.write(f"Population: {args.population}\n")
-        f.write(f"Générations: {args.generations}\n")
-        f.write(f"Mutation: {args.mutation_start} → {args.mutation_end} (decay: {args.mutation_decay})\n")
+        f.write(f"Generations: {args.generations}\n")
+        f.write(f"Mutation: {args.mutation_start} -> {args.mutation_end} (decay: {args.mutation_decay})\n")
         f.write(f"Device: {args.device}\n")
     
     print(f"\nSauvegardes dans: {save_dir}")
@@ -153,7 +154,7 @@ def main():
     print(f"Génération {stats['generation']}: Best={stats['best_fitness_history'][-1]:.2f}, Avg={stats['avg_fitness_history'][-1]:.2f}")
     
     # Amélioration
-    improvement = stats['best_fitness_history'][-1] / max(stats['best_fitness_history'][0], 0.01)
+    improvement = stats['avg_fitness_history'][-1] / max(stats['avg_fitness_history'][0], 0.01)
     print(f"\nAmélioration: x{improvement:.2f}")
     
     print(f"\nFichiers sauvegardés dans: {save_dir}")

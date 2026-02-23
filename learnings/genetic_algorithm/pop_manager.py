@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from neural_network import NeuralAgent
+from learnings.genetic_algorithm.neural_network import NeuralAgent
 
 
 class PopulationManager:
@@ -36,7 +36,7 @@ class PopulationManager:
         """
         self.n_population = n_population
         self.n_rays = n_rays
-        self.device = torch.device(device if torch.cuda.is_available() else 'cpu')
+        self.device = device
         
         # Paramètres de mutation
         self.mutation_rate = initial_mutation_rate
