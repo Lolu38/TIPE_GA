@@ -198,11 +198,13 @@ class TrainingLoop:
         print(f"Début: {n_generations} générations\n" + "=" * 60)
 
         for gen in range(n_generations):
-            print(f"\nGÉNÉRATION {gen + 1}/{n_generations}")
+            #print(f"\nGÉNÉRATION {gen + 1}/{n_generations}")
             stats = self.run_generation(max_steps=1000)
-            print(f"   Best: {stats['best_fitness']:.2f} | "
-                  f"Avg: {stats['avg_fitness']:.2f} | "
-                  f"Mutation: {stats['mutation_rate']:.1%}")
+            print(f"Generation {gen+1} finie | Avg = {stats['avg_fitness']:.2f}")
+            if (gen + 1) % save_every == 0:
+                print(f"   Best: {stats['best_fitness']:.2f} | "
+                    f"Avg: {stats['avg_fitness']:.2f} | "
+                    f"Mutation: {stats['mutation_rate']:.1%}")
 
             if (gen + 1) % save_every == 0:
                 self.pop_manager.save_population(
