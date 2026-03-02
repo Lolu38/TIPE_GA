@@ -114,6 +114,7 @@ class NeuralAgent(nn.Module):
             NeuralAgent avec les mêmes poids
         """
         clone = NeuralAgent(n_rays=self.n_rays, device=self.device).to(self.device)
+        clone.load_state_dict(self.state_dict())
         return clone
     
     def crossover(self, other, crossover_rate=0.5):
@@ -172,29 +173,35 @@ class VectorizedNeuralPopulation:
         # On stocke tous les génomes dans un gros tensor (n_agents, genome_size)
         genome_size = sum(p.numel() for p in self.model.parameters())
         self.genomes = torch.randn(n_agents, genome_size, device=self.device) * 0.5
+
+        
+    def forward_vectorized(self, observations):
+        # observations : (N, input_size), genomes : (N, genome_size)
+        # On extrait W1, b1, W2, b2, W3, b3 depuis les génomes
+        # puis on fait des bmm (batch matrix multiply) pour tous les agents d'un coup
+        N = self.n_agents
+        i = self.n_rays + 1  # input_size
+        h1, h2 = 16, 8
+
+        # Découper les génomes
+        offset = 0
+        W1 = self.genomes[:, offset:offset+h1*i].view(N, h1, i);   offset += h1*i
+        b1 = self.genomes[:, offset:offset+h1].view(N, h1, 1);     offset += h1
+        W2 = self.genomes[:, offset:offset+h2*h1].view(N, h2, h1); offset += h2*h1
+        b2 = self.genomes[:, offset:offset+h2].view(N, h2, 1);     offset += h2
+        W3 = self.genomes[:, offset:offset+2*h2].view(N, 2, h2);   offset += 2*h2
+        b3 = self.genomes[:, offset:offset+2].view(N, 2, 1)
+
+        x = observations.unsqueeze(-1)           # (N, input, 1)
+        x = torch.relu(torch.bmm(W1, x) + b1)   # (N, 16, 1)
+        x = torch.relu(torch.bmm(W2, x) + b2)   # (N, 8, 1)
+        x = torch.bmm(W3, x) + b3               # (N, 2, 1)
+        x = x.squeeze(-1)                        # (N, 2)
+
+        steering = torch.tanh(x[:, 0:1])
+        throttle  = torch.sigmoid(x[:, 1:2])
+        return torch.cat([steering, throttle], dim=1)
     
-    def forward(self, observations):
-        """
-        Calcule les actions pour TOUTE la population en parallèle
-        
-        Args:
-            observations: Tensor (n_agents, n_rays + 1)
-        
-        Returns:
-            actions: Tensor (n_agents, 2)
-        """
-        all_actions = []
-        
-        # Pour chaque agent (on pourrait optimiser encore plus, mais c'est déjà très rapide)
-        for i in range(self.n_agents):
-            # Charger le génome de l'agent i
-            self.model.set_genome(self.genomes[i])
-            
-            # Forward pour cet agent
-            action = self.model(observations[i:i+1])
-            all_actions.append(action)
-        
-        return torch.cat(all_actions, dim=0)
     
     def get_agent(self, index):
         """Récupère un agent spécifique sous forme de NeuralAgent"""

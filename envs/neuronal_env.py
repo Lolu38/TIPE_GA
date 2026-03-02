@@ -68,6 +68,7 @@ class VectorizedCarEnv:
         self.speed = torch.zeros((n_cars, 1), device=self.device)
         self.angle = torch.zeros((n_cars, 1), device=self.device)
         self.alive = torch.ones(n_cars, dtype=torch.bool, device=self.device)
+        self.distances = torch.zeros((n_cars, n_rays), device=self.device)
         
         # --- 3. Raycasting : Angles relatifs fixes ---
         self.ray_angles = torch.linspace(-np.pi/2, np.pi/2, n_rays, device=self.device)
@@ -247,7 +248,7 @@ class VectorizedCarEnv:
         """
         # Distances normalisées
         max_range = 3.0 * self.track_width
-        rays = self.distances() / max_range
+        rays = self.distances / max_range
         rays = torch.clamp(rays, 0.0, 1.0)  # S'assurer que c'est dans [0, 1]
         
         # Vitesse normalisée
