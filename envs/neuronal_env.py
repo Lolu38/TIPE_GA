@@ -110,6 +110,7 @@ class VectorizedCarEnv:
         # Reset vitesse et état
         self.speed.zero_()
         self.alive[:] = True
+        self.distances.zero_()
         
         return self.get_observations()
     
@@ -159,11 +160,11 @@ class VectorizedCarEnv:
         self.pos += movement
         
         # --- 3. Raycasting ---
-        distances = self._compute_lidar()
+        self.distances = self._compute_lidar()
         
         # --- 4. Détection de Collision ---
         # Collision si rayon trop court
-        ray_collision = (distances < self.collision_threshold).any(dim=1)
+        ray_collision = (self.distances < self.collision_threshold).any(dim=1)
         
         # Collision si hors du circuit (plus coûteux, donc on le fait après)
         track_collision = self._check_track_collision()
@@ -246,7 +247,7 @@ class VectorizedCarEnv:
         """
         # Distances normalisées
         max_range = 3.0 * self.track_width
-        rays = self._compute_lidar() / max_range
+        rays = self.distances() / max_range
         rays = torch.clamp(rays, 0.0, 1.0)  # S'assurer que c'est dans [0, 1]
         
         # Vitesse normalisée
