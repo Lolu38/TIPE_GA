@@ -111,9 +111,9 @@ def main():
     print(f"\nSauvegardes dans: {save_dir}")
     
     # --- 8. ENTRAÎNEMENT ---
-    print(f"\n{'='*60}")
+    #print(f"\n{'='*100}")
     print(f"DÉBUT DE L'ENTRAÎNEMENT")
-    print(f"{'='*60}\n")
+    print(f"{'='*100}\n")
     
     training_loop.train(
         n_generations=args.generations,
@@ -123,7 +123,7 @@ def main():
     
     # --- 9. Sauvegarde finale ---
     final_path = os.path.join(save_dir, "final_population.pt")
-    population_manager.save_population(final_path)
+    population_manager.save_population(None, final_path)
     
     # Sauvegarder le meilleur agent
     best_agent_path = os.path.join(save_dir, "best_agent.pt")
@@ -143,16 +143,16 @@ def main():
     
     # --- 10. Statistiques finales ---
     stats = population_manager.get_statistics()
-    print(f"\n{'='*60}")
+    print(f"\n{'='*100}")
     print(f"ENTRAÎNEMENT TERMINÉ")
-    print(f"{'='*60}")
+    print(f"{'='*100}")
     print(f"Générations: {stats['generation']}")
     print(f"Meilleur fitness final: {stats['best_fitness_history'][-1]:.2f}")
     print(f"Fitness moyen final: {stats['avg_fitness_history'][-1]:.2f}")
     print(f"\nProgression:")
     print(f"Génération 1:   Best={stats['best_fitness_history'][0]:.2f}, Avg={stats['avg_fitness_history'][0]:.2f}")
     print(f"Génération {stats['generation']}: Best={stats['best_fitness_history'][-1]:.2f}, Avg={stats['avg_fitness_history'][-1]:.2f}")
-    print(f"\n{'='*60}")
+    print(f"\n{'='*100}")
     
     
     # Amélioration
