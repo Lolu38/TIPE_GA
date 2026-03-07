@@ -20,6 +20,8 @@ from envs.neuronal_env import VectorizedCarEnv, build_env_from_track_config
 from learnings.genetic_algorithm.fitness_tracker import FitnessTracker
 from learnings.genetic_algorithm.pop_manager import PopulationManager, TrainingLoop
 
+# Importer le visuel
+
 
 def parse_args():
     """Parse les arguments de ligne de commande"""
@@ -146,18 +148,9 @@ def main():
     print(f"\n{'='*100}")
     print(f"ENTRAÎNEMENT TERMINÉ")
     print(f"{'='*100}")
-    print(f"Générations: {stats['generation']}")
-    print(f"Meilleur fitness final: {stats['best_fitness_history'][-1]:.2f}")
-    print(f"Fitness moyen final: {stats['avg_fitness_history'][-1]:.2f}")
-    print(f"\nProgression:")
-    print(f"Génération 1:   Best={stats['best_fitness_history'][0]:.2f}, Avg={stats['avg_fitness_history'][0]:.2f}")
-    print(f"Génération {stats['generation']}: Best={stats['best_fitness_history'][-1]:.2f}, Avg={stats['avg_fitness_history'][-1]:.2f}")
-    print(f"\n{'='*100}")
-    
-    
-    # Amélioration
-    improvement = stats['avg_fitness_history'][-1] / max(stats['avg_fitness_history'][0], 0.01)
-    print(f"\nAmélioration: x{improvement:.2f}")
+    do_visu = input("Voulez vous un visuel des données récupérée (stats, moyenne, best...)? Y/N")
+    if do_visu == "Y":
+        pass
     
     print(f"\nFichiers sauvegardés dans: {save_dir}")
 

@@ -24,7 +24,7 @@ class PopulationManager:
         self.mutation_decay = mutation_decay
         self.mutation_strength = mutation_strength
 
-        # ✅ Remplace la liste de NeuralAgent par une instance vectorisée
+        # Remplace la liste de NeuralAgent par une instance vectorisée
         self.population = VectorizedNeuralPopulation(
             n_agents=n_population,
             n_rays=n_rays,
@@ -38,7 +38,7 @@ class PopulationManager:
     def get_actions(self, observations):
         """1 seul appel GPU pour toute la population."""
         with torch.no_grad():
-            # ✅ self.population EST l'instance — plus de problème de self manquant
+            # self.population EST l'instance — plus de problème de self manquant
             return self.population.forward_vectorized(observations)
 
     def select_top_percent(self, fitness_scores, top_percent=0.1):
@@ -46,11 +46,11 @@ class PopulationManager:
         sorted_indices = torch.argsort(fitness_scores, descending=True)
         top_indices = sorted_indices[:n_keep]
 
-        # ✅ Retourne des tenseurs de génomes, plus des objets NeuralAgent
+        # Retourne des tenseurs de génomes, plus des objets NeuralAgent
         elite_genomes = self.population.genomes[top_indices].clone()
 
         print(f"Sélection: Top {n_keep} agents "
-              f"(fitness max: {fitness_scores[top_indices[0]].item():.2f})")
+              f"(fitness max: {fitness_scores[top_indices[0]].item():.2f})\n")
 
         return elite_genomes, top_indices
 
@@ -60,7 +60,7 @@ class PopulationManager:
         genome_size = elite_genomes.shape[1]
         device = self.device
 
-        print(f"Reproduction: {n_elite} parents → {self.n_population} enfants ")
+        print(f"Reproduction: {n_elite} parents → {self.n_population} enfants\n")
 
         new_genomes = torch.empty((self.n_population, genome_size), device=device)
 
@@ -76,18 +76,18 @@ class PopulationManager:
             p1 = elite_genomes[idx1]
             p2 = elite_genomes[idx2]
 
-            # ✅ Crossover uniforme vectorisé
+            # Crossover uniforme vectorisé
             crossover_mask = torch.rand(n_children, genome_size, device=device) < 0.5
             children = torch.where(crossover_mask, p1, p2)
 
-            # ✅ Mutation vectorisée
+            # Mutation vectorisée
             mutation_mask = torch.rand_like(children) < self.mutation_rate
             noise = (torch.rand_like(children) * 2.0 - 1.0) * self.mutation_strength
             children += noise * mutation_mask.float()
 
             new_genomes[n_elite:] = children
 
-        # ✅ Mise à jour directe du tenseur GPU
+        # Mise à jour directe du tenseur GPU
         self.population.genomes = new_genomes
 
     def evolve(self, fitness_scores):
@@ -119,7 +119,7 @@ class PopulationManager:
         best_agent = self.population.get_agent(best_idx)
         best_agent.save_to_file(filepath)
         print(f"Meilleur agent: {filepath} "
-              f"(fitness: {fitness_scores[best_idx].item():.2f})")
+              f"(fitness: {fitness_scores[best_idx].item():.2f})\n")
 
     def save_population(self, tab_avg, filepath):
         torch.save({
@@ -203,7 +203,7 @@ class TrainingLoop:
             stats = self.run_generation(max_steps=1000)
             print(f"Avg = {stats['avg_fitness']:.2f} | Mutation = {stats['mutation_rate']:.1%}")
             tab_avg.append(stats['avg_fitness'])
-            print(f"=" * 60)
+            print(f"-" * 60)
             if (gen + 1) % save_every == 0:
                 print(f"Best: {stats['best_fitness']:.2f} | "
                     f"Avg: {stats['avg_fitness']:.2f} | "
