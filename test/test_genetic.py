@@ -7,7 +7,7 @@ Ce script coordonne:
 - Le fitness tracker (fitness_tracker.py)
 
 Usage:
-    python train_genetic.py --circuit nascar --generations 100 --population 1000
+    python -m test.test_genetic  --generations 100 --population 1000
 """
 
 import torch
@@ -101,14 +101,14 @@ def main():
     save_dir = f"checkpoints/{args.circuit}_{timestamp}"
     os.makedirs(save_dir, exist_ok=True)
     
-    # Sauvegarder la config
-    config_path = os.path.join(save_dir, "config.txt")
+    # Sauvegarder la config (pas nécessaire pour l'instant, permettra de déboguer plus tard)
+    """config_path = os.path.join(save_dir, "config.txt") 
     with open(config_path, 'w') as f:
         f.write(f"Circuit: {args.circuit}\n")
         f.write(f"Population: {args.population}\n")
         f.write(f"Generations: {args.generations}\n")
         f.write(f"Mutation: {args.mutation_start} -> {args.mutation_end} (decay: {args.mutation_decay})\n")
-        f.write(f"Device: {args.device}\n")
+        f.write(f"Device: {args.device}\n")"""
     
     print(f"\nSauvegardes dans: {save_dir}")
     
@@ -123,33 +123,14 @@ def main():
         save_path=save_dir
     )
     
-    # --- 9. Sauvegarde finale ---
-    final_path = os.path.join(save_dir, "final_population.pt")
-    population_manager.save_population(None, final_path)
-    
-    # Sauvegarder le meilleur agent
-    best_agent_path = os.path.join(save_dir, "best_agent.pt")
-    obs = env.reset()
-    fitness_tracker.reset()
-    
-    # Simuler une dernière génération pour obtenir le fitness
-    for step in range(args.max_steps):
-        actions = population_manager.get_actions(obs)
-        obs, _, dones = env.step(actions)
-        fitness_tracker.update(env.pos, env.speed, env.alive)
-        if env.is_all_dead():
-            break
-    
-    fitness_scores = fitness_tracker.compute_fitness()
-    population_manager.save_best_agent(best_agent_path, fitness_scores)
-    
-    # --- 10. Statistiques finales ---
+    # --- 9. Statistiques finales ---
     stats = population_manager.get_statistics()
     print(f"\n{'='*100}")
     print(f"ENTRAÎNEMENT TERMINÉ")
     print(f"{'='*100}")
     do_visu = input("Voulez vous un visuel des données récupérée (stats, moyenne, best...)? Y/N")
-    if do_visu == "Y":
+    if do_visu == "y":
+        main(save_dir)
         pass
     
     print(f"\nFichiers sauvegardés dans: {save_dir}")

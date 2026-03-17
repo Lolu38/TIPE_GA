@@ -121,12 +121,11 @@ class PopulationManager:
         print(f"Meilleur agent: {filepath} "
               f"(fitness: {fitness_scores[best_idx].item():.2f})\n")
 
-    def save_population(self, tab_avg, filepath):
+    def save_population(self, filepath):
         torch.save({
             'genomes': self.population.genomes,
             'generation': self.generation,
             'mutation_rate': self.mutation_rate,
-            'all_avg': tab_avg,
             'best_fitness_history': self.best_fitness_history,
             'avg_fitness_history': self.avg_fitness_history,
             'n_rays': self.n_rays,
@@ -196,21 +195,14 @@ class TrainingLoop:
         import os
         os.makedirs(save_path, exist_ok=True)
         print(f"Début: {n_generations} générations\n" + "=" * 100)
-        tab_avg = []
 
         for gen in range(n_generations):
             print(f"\nGÉNÉRATION {gen + 1}/{n_generations}")
             stats = self.run_generation(max_steps=1000)
             print(f"Avg = {stats['avg_fitness']:.2f} | Mutation = {stats['mutation_rate']:.1%}")
-            tab_avg.append(stats['avg_fitness'])
             print(f"-" * 60)
-            if (gen + 1) % save_every == 0:
-                print(f"Best: {stats['best_fitness']:.2f} | "
-                    f"Avg: {stats['avg_fitness']:.2f} | "
-                    f"Mutation: {stats['mutation_rate']:.1%}")
 
             if (gen + 1) % save_every == 0:
                 self.pop_manager.save_population(
-                    tab_avg,
                     os.path.join(save_path, f'gen_{gen+1}.pt')
                 )
