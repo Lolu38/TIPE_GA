@@ -1,6 +1,8 @@
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 import torch
 from pathlib import Path
-import matplotlib as mpl
+import matplotlib.pyplot as mpl
 from itertools import islice
 
 # Usage: python -m learnings.genetic_algorithm.show_improve
@@ -39,13 +41,30 @@ def visualize_stat(stats, i):
 
 
 def visualize_stat_all(last_file):
-   all_avg, best = access_to_file(last_file)
+    # On s'occupe de faire un leger graphe avec des prints dans le terminal
+    all_avg, _ = access_to_file(last_file)
+    etalon = max(all_avg)
+    for i in range(len(all_avg)):
+        percent = (all_avg[i] / etalon) * 100
+        percent = int(percent)
+        print(f"Gen {i + 1} | ", end='')
+        print("#" * percent, end=' ')
+        print(f"{percent} %")
 
-   
 
-
-def open_mpl(all_avg, all_best):
+def open_mpl(path):
     # Ici on va s'occuper d'afficher le graphe avec toutes les moyennes et tout les best de toutes les 10 gen
+    # On charge les données
+    all_avg, all_best = access_to_file(path)
+    numbers = [i for i in range(1, 101)]
+
+    mpl.plot (numbers, all_avg)
+    mpl.plot (numbers, all_best)
+    mpl.xlabel('$Génération$')
+    mpl.ylabel('$Scores$')
+    mpl.title ('Evolution des scores moyen et max au cours des génération' )
+    mpl.show()
+    #mpl.savefig (FileName +'. png ',dpi =400)
     pass
 
 
@@ -54,8 +73,6 @@ def main(path):
     # On donne le chemin (On se place comme si on était à l'endroit où on le lance, TIPE_genetic de mon côté)
     file = Path(path)
     context_file = f"{file}\config.txt"
-    tab_avg_tot = []
-    tab_best = []
 
     # Print d'intro
     print("=" * 100)
@@ -84,7 +101,7 @@ def main(path):
     visualize_stat_all(f"{file}\gen_100.pt")
 
     # Désormais on va ouvrir matplotlib avec une fenêtre afin d'avoir un graphique pour nos stats
-    open_mpl(tab_avg_tot, tab_best)
+    open_mpl(f"{file}\gen_100.pt")
         
 
 if __name__ == "__main__":
