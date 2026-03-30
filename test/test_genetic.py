@@ -9,10 +9,11 @@ Ce script coordonne:
 Usage:
     python -m test.test_genetic  --generations 100 --population 1000
 """
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 import torch
 import argparse
-import os
 from datetime import datetime
 
 # Importer les modules créés
@@ -21,7 +22,7 @@ from learnings.genetic_algorithm.fitness_tracker import FitnessTracker
 from learnings.genetic_algorithm.pop_manager import PopulationManager, TrainingLoop
 
 # Importer le visuel
-
+import learnings.genetic_algorithm
 
 def parse_args():
     """Parse les arguments de ligne de commande"""
