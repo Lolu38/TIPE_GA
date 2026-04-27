@@ -362,4 +362,4 @@ def build_env_from_track_config(track_name='nascar', n_cars=1000, n_rays=9, devi
         device=device
     )
     
-    return env, checkpoints
+    return env, checkpoints, walls

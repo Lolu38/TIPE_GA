@@ -7,7 +7,7 @@ Ce script coordonne:
 - Le fitness tracker (fitness_tracker.py)
 
 Usage:
-    python -m test.test_genetic  --generations 100 --population 1000
+    python -m test.test_genetic  --generations 100 --population 1000 --frequency_showgen 2
 """
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
@@ -21,8 +21,6 @@ from envs.neuronal_env import VectorizedCarEnv, build_env_from_track_config
 from learnings.genetic_algorithm.fitness_tracker import FitnessTracker
 from learnings.genetic_algorithm.pop_manager import PopulationManager, TrainingLoop
 
-# Importer le visuel
-import learnings.genetic_algorithm
 
 def parse_args():
     """Parse les arguments de ligne de commande"""
@@ -37,7 +35,9 @@ def parse_args():
     parser.add_argument('--mutation_start', type=float, default=0.3,help='Taux de mutation initial (0.3 = 30%)')    
     parser.add_argument('--mutation_end', type=float, default=0.05,help='Taux de mutation final (0.001 = 0.1%)')    
     parser.add_argument('--mutation_decay', type=float, default=0.975,help='Facteur de décroissance de la mutation')    
-    parser.add_argument('--checkpoint', type=str, default=None,help='Chemin vers un checkpoint à reprendre')    
+    parser.add_argument('--checkpoint', type=str, default=None,help='Chemin vers un checkpoint à reprendre')
+    parser.add_argument('--frequency_showgen', type=int, default = -1, help='Fréquence à laquelle on va chercher à afficher nos générations')  
+    parser.add_argument('--random_train', type=int, default=1, help='Le nombre de circuit avec lesquels on veut entrainer nos agents')  
     return parser.parse_args()
 
 
@@ -56,7 +56,7 @@ def main():
     
     # --- 2. Création de l'environnement ---
     print(f"\nChargement du circuit: {args.circuit}")
-    env, checkpoints = build_env_from_track_config(
+    env, checkpoints, walls = build_env_from_track_config(
         track_name=args.circuit,
         n_cars=args.population,
         n_rays=args.n_rays,
@@ -94,7 +94,9 @@ def main():
     training_loop = TrainingLoop(
         env=env,
         population_manager=population_manager,
-        fitness_tracker=fitness_tracker
+        fitness_tracker=fitness_tracker,
+        frequency_show=args.frequency_showgen,
+        walls=walls       
     )
     
     # --- 7. Dossier de sauvegarde ---
@@ -130,7 +132,7 @@ def main():
     print(f"ENTRAÎNEMENT TERMINÉ")
     print(f"{'='*100}")
     do_visu = input("Voulez vous un visuel des données récupérée (stats, moyenne, best...)? Y/N")
-    if do_visu == "y":
+    if do_visu == "y" | do_visu == "Y":
         main(save_dir)
         pass
     

@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from learnings.genetic_algorithm.neural_network import NeuralAgent, VectorizedNeuralPopulation
+from render.render_GPU import VectorizedRenderer
 
 
 class PopulationManager:
@@ -163,10 +164,13 @@ class PopulationManager:
 
 class TrainingLoop:
 
-    def __init__(self, env, population_manager, fitness_tracker):
+    def __init__(self, env, population_manager, fitness_tracker, frequency_show=0, walls=None):
         self.env = env
         self.pop_manager = population_manager
         self.fitness_tracker = fitness_tracker
+        self.frequency_show = frequency_show
+        self.walls = walls
+        self.renderer = VectorizedRenderer() if frequency_show != 0 else None
 
     def run_generation(self, max_steps=1000, render=False):
         observations = self.env.reset()
@@ -181,6 +185,11 @@ class TrainingLoop:
                 speeds=self.env.speed,
                 alive_mask=self.env.alive
             )
+            if render == True:
+                render_data = self.env.get_render_data()
+                still_running = self.renderer.render_step(0, render_data, self.walls)
+                if not still_running:
+                    return None
 
             if not self.env.alive.any():
                 print(f"Toute la population est morte au step {step}")
@@ -198,10 +207,15 @@ class TrainingLoop:
 
         for gen in range(n_generations):
             print(f"\nGÉNÉRATION {gen + 1}/{n_generations}")
-            stats = self.run_generation(max_steps=1000)
+            
+
+            if self.frequency_show != 0 and (gen+1) % self.frequency_show == 0:
+                stats = self.run_generation(max_steps=1000, render=True) #On affiche ssi on doit: bon moment et bonne frequence
+            else:
+                stats = self.run_generation(max_steps=1000, render=False)
+            
             print(f"Avg = {stats['avg_fitness']:.2f} | Mutation = {stats['mutation_rate']:.1%}")
             print(f"-" * 60)
-
             if (gen + 1) % save_every == 0:
                 self.pop_manager.save_population(
                     os.path.join(save_path, f'gen_{gen+1}.pt')
