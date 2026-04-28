@@ -75,3 +75,6 @@ def get_checkpoints():
     outer, inner, _ = get_walls_width()
     centerline = compute_centerline(outer, inner)
     return centerline[::20]
+
+def get_track_geo():
+    return "Angular"

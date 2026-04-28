@@ -82,3 +82,6 @@ def get_difficulty():
 
 def get_name():
     return "nascar"
+
+def get_track_geo():
+    return "Angular_track"
