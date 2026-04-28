@@ -7,7 +7,7 @@ Ce script coordonne:
 - Le fitness tracker (fitness_tracker.py)
 
 Usage:
-    python -m test.test_genetic  --generations 100 --population 1000 --frequency_showgen 2
+    python -m test.test_genetic  --generations 100 --population 100 --frequency_showgen 2
 """
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"

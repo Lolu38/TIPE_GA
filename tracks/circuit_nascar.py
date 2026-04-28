@@ -1,4 +1,12 @@
+"""
+circuit_nascar.py
+-----------------
+Circuit NASCAR (ovale avec deux demi-cercles).
+Difficulté 1 — circuit simple, bon point de départ pour l'entraînement.
+"""
 import math
+import numpy as np
+from tracks.track_geometry import compute_centerline as cc
 
 def arc_points(cx, cy, r, a_start, a_end, n=64):
     pts = []
@@ -50,8 +58,27 @@ def get_walls():
 
     return outer, inner
 
+def get_width():
+    outer, inner = get_walls()
+    widths = [
+        np.linalg.norm(np.array(outer[i]) - np.array(inner[i]))
+        for i in range(min(len(outer), len(inner)))
+    ]
+    return float(np.mean(widths))
+
 def get_spawn():
     x = 400
     y = 145
     theta = 0.0
     return x,y,theta
+
+def get_checkpoints():
+    outer, inner = get_walls()
+    centerline = cc(outer, inner)
+    return centerline[::10]
+
+def get_difficulty():
+    return 1
+
+def get_name():
+    return "nascar"
