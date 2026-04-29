@@ -151,13 +151,13 @@ def load_circuits( tracks_dir:str|Path = "tracks", n:int|None = None, names:list
         modules   = [m for m in modules if m.get_name() in name_set]
         not_found = name_set - {m.get_name() for m in modules}
         if not_found:
-            print(f"[circuit_loader] ⚠  Circuits introuvables : {not_found}")
+            print(f"[circuit_loader] Circuits introuvables : {not_found}")
 
     # --- Limitation à n circuits (les plus faciles) ---
     elif n is not None:
         if n > len(modules):
             print(
-                f"[circuit_loader] ⚠  n={n} demandé mais seulement "
+                f"[circuit_loader] n={n} demandé mais seulement "
                 f"{len(modules)} circuit(s) disponible(s) — tous chargés."
             )
         modules = modules[:n]
