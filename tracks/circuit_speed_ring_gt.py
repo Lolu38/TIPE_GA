@@ -1,4 +1,23 @@
-def get_center_line():
+"""
+circuit_high_speed_ring.py
+--------------------------
+Circuit High Speed Ring (inspiré Gran Turismo), généré par spline Catmull-Rom.
+Difficulté 3 — circuit complexe avec courbes enchaînées.
+"""
+from tracks.Catmull_Rom_geometry import catmull_rom_spline
+from tracks.track_geometry import generate_walls, compute_centerline
+from tracks.track_geometry import AngularTrack
+
+def get_name():
+    return "high_speed_ring"
+
+def get_difficulty():
+    return 3
+
+def get_spawn():
+    return 50* 8.72289156626506, 1.03125 * 50, -1.0
+
+def _get_center_line():
     line = [
     (50* 8.72289156626506, 1.03125 * 50),
     (50* 5.096385542168676, 0.9687499999999999 * 50),
@@ -45,5 +64,28 @@ def get_center_line():
 
     return line
 
-def get_spawn():
-    return 50* 8.72289156626506, 1.03125 * 50, -1.0
+def _build_walls_width():
+    """Construction unique — partagée entre get_walls"""
+    control_points = _get_center_line()
+    centerline = catmull_rom_spline(control_points)
+    outer, inner, width = generate_walls(centerline)
+    return outer, inner, width
+
+def get_width():
+    _, _, width = _build_walls_width()
+    return width
+
+def get_walls():
+    outer, inner, _ = _build_walls_width()
+    walls  = [(outer[i], outer[i+1]) for i in range(len(outer) - 1)]
+    walls += [(inner[i], inner[i+1]) for i in range(len(inner) - 1)]
+    return walls
+
+def get_checkpoints():
+    outer, inner, _ = _build_walls_width()
+    centerline = compute_centerline(outer, inner)
+    return centerline[::20]
+
+def get_track_geo():
+    outer, inner, _ = _build_walls_width()
+    return AngularTrack(outer, inner)

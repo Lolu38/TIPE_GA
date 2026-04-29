@@ -1,4 +1,14 @@
+"""
+circuit_nascar.py
+-----------------
+Circuit NASCAR (ovale avec deux demi-cercles).
+Difficulté 1 — circuit simple, bon point de départ pour l'entraînement.
+"""
 import math
+import numpy as np
+from tracks.track_geometry import compute_centerline as cc
+from tracks.track_geometry import AngularTrack
+
 
 def arc_points(cx, cy, r, a_start, a_end, n=64):
     pts = []
@@ -10,7 +20,7 @@ def arc_points(cx, cy, r, a_start, a_end, n=64):
         ))
     return pts
 
-def get_walls():
+def _create_walls():
     cx_left, cx_right = 250, 550
     cy = 300
     r_outer = 200
@@ -50,8 +60,37 @@ def get_walls():
 
     return outer, inner
 
+def get_walls():
+    outer, inner = _create_walls()
+    walls  = [(outer[i], outer[i+1]) for i in range(len(outer) - 1)]
+    walls += [(inner[i], inner[i+1]) for i in range(len(inner) - 1)]
+    return walls
+
+def get_width():
+    outer, inner = _create_walls()
+    widths = [
+        np.linalg.norm(np.array(outer[i]) - np.array(inner[i]))
+        for i in range(min(len(outer), len(inner)))
+    ]
+    return float(np.mean(widths))
+
 def get_spawn():
     x = 400
     y = 145
     theta = 0.0
     return x,y,theta
+
+def get_checkpoints():
+    outer, inner = _create_walls()
+    centerline = cc(outer, inner)
+    return centerline[::10]
+
+def get_difficulty():
+    return 1
+
+def get_name():
+    return "nascar"
+
+def get_track_geo():
+    outer, inner = _create_walls()
+    return AngularTrack(outer, inner)

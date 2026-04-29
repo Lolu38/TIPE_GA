@@ -2,6 +2,7 @@ import torch
 import numpy as np
 from learnings.genetic_algorithm.neural_network import NeuralAgent, VectorizedNeuralPopulation
 from render.render_GPU import VectorizedRenderer
+import os
 
 
 class PopulationManager:
@@ -163,8 +164,7 @@ class PopulationManager:
 
 
 class TrainingLoop:
-
-    def __init__(self, env, population_manager, fitness_tracker, frequency_show=0, walls=None):
+    def __init__(self, env, population_manager, fitness_tracker, frequency_show = 0, walls = None, all_configs = None):
         self.env = env
         self.pop_manager = population_manager
         self.fitness_tracker = fitness_tracker
@@ -172,7 +172,42 @@ class TrainingLoop:
         self.walls = walls
         self.renderer = VectorizedRenderer(show_dead=True) if frequency_show != 0 else None
 
-    def run_generation(self, max_steps=1000, render=False):
+        # Multi-circuit : liste de configs ou None si circuit unique
+        # all_configs = [{"name", "difficulty", "env", "checkpoints", "walls"}, ...]
+        self.all_configs = all_configs if all_configs and len(all_configs) > 1 else None
+        self._circuit_idx = 0   # curseur circulaire
+
+    def _rotate_circuit(self):
+        cfg = self.all_configs[self._circuit_idx]
+        self._circuit_idx = (self._circuit_idx + 1) % len(self.all_configs)
+
+        self.env   = cfg["env"]
+        self.walls = cfg["walls"]
+
+        new_checkpoints = cfg["checkpoints"]
+        n_new = len(new_checkpoints)
+
+        self.fitness_tracker.checkpoints = torch.tensor(
+            new_checkpoints, dtype=torch.float32, device=self.fitness_tracker.device
+        )
+        self.fitness_tracker.n_checkpoints = n_new
+        self.fitness_tracker.spawn_point = (
+            self.env.spawn_x, self.env.spawn_y, self.env.spawn_angle
+        )
+        self.fitness_tracker.spawn_tensor = torch.tensor(
+            [self.env.spawn_x, self.env.spawn_y],
+            dtype=torch.float32, device=self.fitness_tracker.device
+        )
+
+        # Recréer checkpoint_status à la bonne taille pour ce circuit
+        self.fitness_tracker.checkpoint_status = torch.zeros(
+            (self.fitness_tracker.n_cars, n_new),
+            dtype=torch.bool, device=self.fitness_tracker.device
+        )
+
+        print(f"  Circuit : {cfg['name']} (difficulté {cfg['difficulty']})")
+
+    def run_generation(self, max_steps = 1000, render = False, generation=0):
         observations = self.env.reset()
         self.fitness_tracker.reset()
 
@@ -181,13 +216,13 @@ class TrainingLoop:
             observations, rewards, dones = self.env.step(actions)
 
             self.fitness_tracker.update(
-                positions=self.env.pos,
-                speeds=self.env.speed,
-                alive_mask=self.env.alive
+                positions = self.env.pos,
+                speeds = self.env.speed,
+                alive_mask = self.env.alive
             )
             if render == True:
                 render_data = self.env.get_render_data()
-                still_running = self.renderer.render_step(0, render_data, self.walls)
+                still_running = self.renderer.render_step(generation, render_data, self.walls)
                 if not still_running:
                     return None
 
@@ -201,18 +236,20 @@ class TrainingLoop:
         return stats
 
     def train(self, n_generations=100, save_every=10, save_path='checkpoints'):
-        import os
-        os.makedirs(save_path, exist_ok=True)
+        os.makedirs(save_path, exist_ok = True)
         print(f"Début: {n_generations} générations\n" + "=" * 100)
 
         for gen in range(n_generations):
             print(f"\nGÉNÉRATION {gen + 1}/{n_generations}")
             
+            # Rotation de circuit si on en a plusieurs
+            if self.all_configs is not None:
+                self._rotate_circuit()
 
             if self.frequency_show != 0 and (gen+1) % self.frequency_show == 0:
-                stats = self.run_generation(max_steps=1000, render=True) #On affiche ssi on doit: bon moment et bonne frequence
+                stats = self.run_generation(max_steps = 1000, render = True, generation = gen) #On affiche ssi on doit: bon moment et bonne frequence
             else:
-                stats = self.run_generation(max_steps=1000, render=False)
+                stats = self.run_generation(max_steps = 1000, render = False, generation = gen)
             
             print(f"Avg = {stats['avg_fitness']:.2f} | Mutation = {stats['mutation_rate']:.1%}")
             print(f"-" * 60)
