@@ -170,7 +170,7 @@ class TrainingLoop:
         self.fitness_tracker = fitness_tracker
         self.frequency_show = frequency_show
         self.walls = walls
-        self.renderer = VectorizedRenderer() if frequency_show != 0 else None
+        self.renderer = VectorizedRenderer(show_dead=True) if frequency_show != 0 else None
 
     def run_generation(self, max_steps=1000, render=False):
         observations = self.env.reset()

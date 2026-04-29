@@ -131,7 +131,7 @@ class VectorizedRenderer:
 
             x, y = pos[i]
             theta = float(angles_flat[i])
-            color = (80, 220, 80) if is_alive else (120, 120, 120)
+            color = (80, 220, 80) if is_alive else (200, 0, 0)
             px, py = self._to_screen(x, y)
 
             triangle = [
