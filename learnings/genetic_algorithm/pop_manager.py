@@ -178,27 +178,36 @@ class TrainingLoop:
         self._circuit_idx = 0   # curseur circulaire
 
     def _rotate_circuit(self):
-        """
-        Passe au circuit suivant dans la liste (rotation circulaire).
-        Met à jour self.env, self.walls et les checkpoints du fitness_tracker.
-        Appelé uniquement si all_configs contient plusieurs circuits.
-        """
         cfg = self.all_configs[self._circuit_idx]
         self._circuit_idx = (self._circuit_idx + 1) % len(self.all_configs)
- 
-        self.env = cfg["env"]
-        self.walls = cfg["walls"]
- 
-        # Mise à jour des checkpoints et du spawn dans le fitness_tracker
-        self.fitness_tracker.checkpoints = cfg["checkpoints"]
-        self.fitness_tracker.spawn_point = (self.env.spawn_x, self.env.spawn_y, self.env.spawn_angle)
 
-        # Passer au circuit suivant la prochaine fois
-        self._circuit_idx += 1
- 
+        self.env   = cfg["env"]
+        self.walls = cfg["walls"]
+
+        new_checkpoints = cfg["checkpoints"]
+        n_new = len(new_checkpoints)
+
+        self.fitness_tracker.checkpoints = torch.tensor(
+            new_checkpoints, dtype=torch.float32, device=self.fitness_tracker.device
+        )
+        self.fitness_tracker.n_checkpoints = n_new
+        self.fitness_tracker.spawn_point = (
+            self.env.spawn_x, self.env.spawn_y, self.env.spawn_angle
+        )
+        self.fitness_tracker.spawn_tensor = torch.tensor(
+            [self.env.spawn_x, self.env.spawn_y],
+            dtype=torch.float32, device=self.fitness_tracker.device
+        )
+
+        # Recréer checkpoint_status à la bonne taille pour ce circuit
+        self.fitness_tracker.checkpoint_status = torch.zeros(
+            (self.fitness_tracker.n_cars, n_new),
+            dtype=torch.bool, device=self.fitness_tracker.device
+        )
+
         print(f"  Circuit : {cfg['name']} (difficulté {cfg['difficulty']})")
 
-    def run_generation(self, max_steps = 1000, render = False):
+    def run_generation(self, max_steps = 1000, render = False, generation=0):
         observations = self.env.reset()
         self.fitness_tracker.reset()
 
@@ -213,7 +222,7 @@ class TrainingLoop:
             )
             if render == True:
                 render_data = self.env.get_render_data()
-                still_running = self.renderer.render_step(0, render_data, self.walls)
+                still_running = self.renderer.render_step(generation, render_data, self.walls)
                 if not still_running:
                     return None
 
@@ -238,9 +247,9 @@ class TrainingLoop:
                 self._rotate_circuit()
 
             if self.frequency_show != 0 and (gen+1) % self.frequency_show == 0:
-                stats = self.run_generation(max_steps = 1000, render = True) #On affiche ssi on doit: bon moment et bonne frequence
+                stats = self.run_generation(max_steps = 1000, render = True, generation = gen) #On affiche ssi on doit: bon moment et bonne frequence
             else:
-                stats = self.run_generation(max_steps = 1000, render = False)
+                stats = self.run_generation(max_steps = 1000, render = False, generation = gen)
             
             print(f"Avg = {stats['avg_fitness']:.2f} | Mutation = {stats['mutation_rate']:.1%}")
             print(f"-" * 60)

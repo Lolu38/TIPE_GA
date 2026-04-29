@@ -6,6 +6,7 @@ Difficulté 3 — circuit complexe avec courbes enchaînées.
 """
 from tracks.Catmull_Rom_geometry import catmull_rom_spline
 from tracks.track_geometry import generate_walls, compute_centerline
+from tracks.track_geometry import AngularTrack
 
 def get_name():
     return "high_speed_ring"
@@ -76,7 +77,9 @@ def get_width():
 
 def get_walls():
     outer, inner, _ = _build_walls_width()
-    return outer, inner
+    walls  = [(outer[i], outer[i+1]) for i in range(len(outer) - 1)]
+    walls += [(inner[i], inner[i+1]) for i in range(len(inner) - 1)]
+    return walls
 
 def get_checkpoints():
     outer, inner, _ = _build_walls_width()
@@ -84,4 +87,5 @@ def get_checkpoints():
     return centerline[::20]
 
 def get_track_geo():
-    return "Angular"
+    outer, inner, _ = _build_walls_width()
+    return AngularTrack(outer, inner)

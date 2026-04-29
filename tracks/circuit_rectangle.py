@@ -4,7 +4,8 @@ circuit_rectangle.py
 Circuit rectangulaire simple.
 Difficulté 2 — virages à 90°, plus exigeant que l'ovale.
 """ 
- 
+from tracks.track_geometry import RectangularTrack
+
 def get_difficulty():
     return 2
   
@@ -14,7 +15,7 @@ def get_spawn():
     theta = 0.0
     return x, y, theta 
  
-def get_walls():
+def _create_walls():
     outer = [
         ((0, 0), (800, 0)),
         ((800, 0), (800, 600)),
@@ -29,7 +30,12 @@ def get_walls():
         ((80, 520), (80, 80))
     ]
 
-    return outer + inner
+    return outer, inner
+
+def get_walls():
+    outer, inner = _create_walls()
+    walls = outer + inner
+    return walls
 
 def get_width():
     return 80.0
@@ -42,4 +48,4 @@ def get_name():
     return "rectangle"
 
 def get_track_geo():
-    return "Rectangle"
+    return RectangularTrack(get_walls())

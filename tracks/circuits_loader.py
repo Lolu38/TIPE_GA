@@ -37,8 +37,7 @@ from pathlib import Path
 from envs.neuronal_env import VectorizedCarEnv
 
 
-_REQUIRED = ("get_name", "get_difficulty", "get_walls", "get_spawn",
-             "get_width", "get_checkpoints", "get_track_geo")
+_REQUIRED = ("get_name", "get_difficulty", "get_walls", "get_spawn", "get_width", "get_checkpoints", "get_track_geo")
 
 
 # -- Chargement dynamique --------------------------------------------------------
