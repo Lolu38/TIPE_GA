@@ -63,16 +63,23 @@ def _get_center_line():
 
     return line
 
-def get_walls_width():
-    """Construction unique — partagée entre get_walls, get_width, get_checkpoints."""
+def _build_walls_width():
+    """Construction unique — partagée entre get_walls"""
     control_points = _get_center_line()
     centerline = catmull_rom_spline(control_points)
     outer, inner, width = generate_walls(centerline)
-    walls = [outer, inner]
-    return walls, width
+    return outer, inner, width
+
+def get_width():
+    _, _, width = _build_walls_width()
+    return width
+
+def get_walls():
+    outer, inner, _ = _build_walls_width()
+    return outer, inner
 
 def get_checkpoints():
-    outer, inner, _ = get_walls_width()
+    outer, inner, _ = _build_walls_width()
     centerline = compute_centerline(outer, inner)
     return centerline[::20]
 

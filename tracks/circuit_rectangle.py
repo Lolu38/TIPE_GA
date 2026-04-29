@@ -41,5 +41,5 @@ def get_checkpoints():
 def get_name():
     return "rectangle"
 
-def get_treack_geo():
+def get_track_geo():
     return "Rectangle"
