@@ -38,7 +38,7 @@ def parse_args():
     parser.add_argument('--checkpoint', type=str, default=None,help='Chemin vers un checkpoint à reprendre')
     parser.add_argument('--frequency_showgen', type=int, default = -1, help='Fréquence à laquelle on va chercher à afficher nos générations')  
     parser.add_argument('--random_train', type=int, default=1, help='Le nombre de circuit avec lesquels on veut entrainer nos agents, classé par difficulté')
-    parser.add_argument('--circuit', type=str, default='nascar',choices=['nascar', 'rectangle', 'high_speed_ring', 'fujispeedway'],help='Circuit à utiliser si on ne choisit pas un nombre juste avant')
+    parser.add_argument('--circuit', type=str, default='nascar',choices=['nascar', 'rectangle', 'high_speed_ring', 'w_track'],help='Circuit à utiliser si on ne choisit pas un nombre juste avant')
     return parser.parse_args()
 
 
