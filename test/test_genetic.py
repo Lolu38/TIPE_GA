@@ -41,7 +41,7 @@ def parse_args():
     parser.add_argument('--checkpoint', type=str, default=None,help='Chemin vers un checkpoint à reprendre')
     parser.add_argument('--frequency_showgen', type=int, default = -1, help='Fréquence à laquelle on va chercher à afficher nos générations')  
     parser.add_argument('--random_train', type=int, default=1, help='Le nombre de circuit avec lesquels on veut entrainer nos agents, classé par difficulté')
-    parser.add_argument('--circuit', type=str, default='nascar',choices=['nascar', 'rectangle', 'speed_ring_gt', 'w_track'],help='Circuit à utiliser si on ne choisit pas un nombre juste avant')
+    parser.add_argument('--circuit', type=str, nargs='+',default='nascar',choices=['nascar', 'rectangle', 'speed_ring_gt', 'w_track'],help='Circuit à utiliser si on ne choisit pas un nombre juste avant')
     return parser.parse_args()
 
 
@@ -62,7 +62,7 @@ def main():
 
     configs = load_circuits(
         n = args.random_train if args.random_train > 0 else None,
-        names = [args.circuit] if args.random_train == 0 else None,
+        names = args.circuit if args.random_train == 0 else None,
         n_cars = args.population,
         n_rays = args.n_rays,
         device = args.device,
