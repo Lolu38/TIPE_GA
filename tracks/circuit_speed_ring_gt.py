@@ -9,7 +9,7 @@ from tracks.track_geometry import generate_walls, compute_centerline
 from tracks.track_geometry import AngularTrack
 
 def get_name():
-    return "high_speed_ring"
+    return "speed_ring_gt"
 
 def get_difficulty():
     return 3
