@@ -9,7 +9,7 @@ Ce script coordonne:
 Usage:
     python -m test.test_genetic  --generations 100 --population 100 --frequency_showgen 2 --random_train 2
     Ou bien
-    python -m test.test_genetic  --generations 100 --population 100 --frequency_showgen 2 --random_train 0 --circuit speed_ring_gt
+    python -m test.test_genetic  --generations 100 --population 100 --frequency_showgen 2 --random_train 0 --circuit speed_ring_gt --nb_laps 1 --nb_steps 2000
 
 """
 import os
@@ -42,6 +42,8 @@ def parse_args():
     parser.add_argument('--frequency_showgen', type=int, default = -1, help='Fréquence à laquelle on va chercher à afficher nos générations')  
     parser.add_argument('--random_train', type=int, default=1, help='Le nombre de circuit avec lesquels on veut entrainer nos agents, classé par difficulté')
     parser.add_argument('--circuit', type=str, nargs='+',default='nascar',choices=['nascar', 'rectangle', 'speed_ring_gt', 'w_track'],help='Circuit à utiliser si on ne choisit pas un nombre juste avant')
+    parser.add_argument('--nb_laps', type=int, default = 1, help='Le nombre de tout souhaité pour considérer la fin de la génération')
+    parser.add_argument('--nb_steps', type=int, default=1000, help='Nombre d\'actions maximals autorisées pour considérer la fin d\'une génération')
     return parser.parse_args()
 
 
@@ -126,7 +128,9 @@ def main():
         fitness_tracker = fitness_tracker,
         frequency_show = args.frequency_showgen,
         walls = walls,
-        all_configs = configs
+        all_configs = configs, 
+        max_laps = args.nb_laps,
+        max_steps = args.nb_steps
     )
     
     # --- 7. Dossier de sauvegarde ---

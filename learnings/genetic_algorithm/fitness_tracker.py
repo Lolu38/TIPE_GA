@@ -54,7 +54,7 @@ class FitnessTracker:
         self.checkpoints_passed.zero_()
         self.checkpoint_status.zero_()
         self.first_checkpoint_direction.zero_()
-        self.last_spawn_distance.fill_(float('inf'))
+        self.last_spawn_distance.fill_(0.0)
     
     def update(self, positions, speeds, alive_mask):
         """
@@ -129,6 +129,10 @@ class FitnessTracker:
         
         # Voitures qui étaient loin du spawn au step précédent (évite multi-comptage)
         was_far = self.last_spawn_distance > self.treshold
+
+        # Raccourci = près du spawn + on était loin + checkpoints incomplets + vivant
+        shortcut = ~all_checkpoints_passed & near_spawn & was_far & alive_mask
+        alive_mask[shortcut] = False  # Tuer les tricheurs
         
         # Tour complet = tous checkpoints + retour au spawn + on était loin avant
         lap_completed = all_checkpoints_passed & near_spawn & was_far & alive_mask
