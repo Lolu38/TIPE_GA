@@ -15,7 +15,7 @@ def get_difficulty():
     return 3
 
 def get_spawn():
-    return 50* 8.72289156626506, 1.03125 * 50, -1.0
+    return 50* 8.72289156626506, 1.03125 * 50, -0.0
 
 def _get_center_line():
     line = [

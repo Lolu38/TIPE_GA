@@ -21,7 +21,7 @@ class VectorizedCarEnv:
         n_cars=1000,
         n_rays=7,
         device='cuda',
-        max_speed=20.0,
+        max_speed=30.0,
         collision_threshold=5.0
     ):
         """
