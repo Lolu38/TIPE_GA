@@ -23,7 +23,7 @@ Rappel de la physique (voir tire_system.py pour la dérivation complète) :
 """
 
 import torch
-from envs.physics import DT, BASE_MAX_SPEED
+from physics.physic import DT, BASE_MAX_SPEED
 
 # -----------------------------------------------------------------------------
 # Tables des propriétés — une ligne par composé, dans l'ordre COMPOUNDS

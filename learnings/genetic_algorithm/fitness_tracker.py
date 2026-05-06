@@ -23,7 +23,7 @@ class FitnessTracker:
         self.device = torch.device(device if torch.cuda.is_available() else 'cpu')
         self.n_cars = n_cars
         self.spawn_point = spawn_point
-        self.treshold = track_width
+        self.treshold = track_width/2
         
         # Conversion checkpoints en tenseur GPU
         self.checkpoints = torch.tensor(checkpoints, dtype=torch.float32, device=self.device)
