@@ -11,7 +11,7 @@ Coordonne :
 
 Usage :
     # Entraînement basique (piste sèche, Medium)
-    python -m test.test_genetic_v2 --generations 100 --population 1000
+    python -m test.test_physic  --generations 100 --population 100 --frequency_showgen 0 --random_train 0 --circuit speed_ring_gt --nb_laps 1 --nb_steps 2000
 
     # Pluie dynamique, démarrage en Wet, phase 2 à la génération 20
     python -m test.test_genetic_v2 --generations 100 --rain_mode dynamic --initial_rain 0.5 --compound wet --phase2_gen 20
@@ -40,7 +40,7 @@ from physics.tires_system import (
     COMPOUNDS, HARD, MEDIUM, SOFT, WET, HEAVY_WET
 )
 
-# Mapping nom → indice pour --compound
+# Mapping nom -> indice pour --compound
 _COMPOUND_MAP = {
     "hard"     : HARD,
     "medium"   : MEDIUM,
@@ -213,7 +213,7 @@ def main():
         f.write(f"Population     : {args.population}\n")
         f.write(f"Générations    : {args.generations}\n")
         f.write(f"Rayons         : {args.n_rays}\n")
-        f.write(f"Mutation       : {args.mutation_start} → {args.mutation_end} (decay={args.mutation_decay})\n")
+        f.write(f"Mutation       : {args.mutation_start} -> {args.mutation_end} (decay={args.mutation_decay})\n")
         f.write(f"Device         : {args.device}\n")
         f.write(f"Pluie          : {args.rain_mode} (init={args.initial_rain})\n")
         f.write(f"Composé        : {args.compound}\n")
