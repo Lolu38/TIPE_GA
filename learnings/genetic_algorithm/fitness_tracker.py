@@ -1,4 +1,6 @@
+import math
 import torch
+
 
 class FitnessTracker:
     """
@@ -12,12 +14,14 @@ class FitnessTracker:
     - Direction (bon sens ou mauvais sens)
     """
     
-    def __init__(self, checkpoints, spawn_point, n_cars, track_width, device='cuda'):
+    def __init__(self, checkpoints, spawn_point, n_cars, track_width, walls, device='cuda'):
         """
         Args:
             checkpoints: Liste de points (x, y) définissant les checkpoints
             spawn_point: Tuple (x, y, angle) du point de départ
             n_cars: Nombre de voitures dans la population
+            track_width: Largeur du circuit (rayon de détection des checkpoints)
+            walls: Liste de murs pour calculer la ligne d'arrivée
             device: 'cuda' ou 'cpu'
         """
         self.device = torch.device(device if torch.cuda.is_available() else 'cpu')
@@ -41,183 +45,220 @@ class FitnessTracker:
         # Détection du sens de rotation
         self.first_checkpoint_direction = torch.zeros(n_cars, dtype=torch.int32, device=self.device)
         # 0 = pas encore déterminé, 1 = sens horaire, -1 = sens anti-horaire
-        
-        # Distance au spawn pour détecter le passage de ligne
-        self.spawn_tensor = torch.tensor([spawn_point[0], spawn_point[1]], dtype=torch.float32, device=self.device)
-        self.last_spawn_distance = torch.full((n_cars,), float('inf'), device=self.device)
-        
+
+        # Positions précédentes pour la détection de franchissement de ligne
+        self.prev_positions = torch.zeros((n_cars, 2), device=self.device)
+
+        # Calcul et stockage de la ligne d'arrivée (segment A → B perpendiculaire au spawn)
+        A, B = self._compute_finish_line(spawn_point, walls)
+        self.finish_line_A = torch.tensor(A, dtype=torch.float32, device=self.device)
+        self.finish_line_B = torch.tensor(B, dtype=torch.float32, device=self.device)
+
+    #  Calcul de la ligne d'arrivée
+    def _compute_finish_line(self, spawn_point, walls):
+        """
+        Calcule les extrémités de la ligne d'arrivée en lançant deux rayons
+        perpendiculaires à l'angle de spawn depuis le point de départ.
+        """
+        ox, oy, theta = spawn_point
+
+        perp_left = (math.cos(theta + math.pi / 2), math.sin(theta + math.pi / 2))
+        perp_right = (math.cos(theta - math.pi / 2), math.sin(theta - math.pi / 2))
+
+        A = self._cast_ray((ox, oy), perp_left,  walls)
+        B = self._cast_ray((ox, oy), perp_right, walls)
+        return A, B
+
+    def _cast_ray(self, origin, direction, walls):
+        """
+        Lance un rayon depuis origin dans direction et retourne le point
+        d'impact avec le mur le plus proche.
+        Compatible avec les formats (A, B) et (A, B, xmin, xmax, ymin, ymax).
+        """
+        from learnings.ray_casting.intersections import ray_segment_intersection
+        ox, oy = origin
+        dx, dy = direction
+        best_t = float('inf')
+
+        for wall in walls:
+            A, B = wall[0], wall[1]
+            t = ray_segment_intersection(origin, direction, A, B)
+            if t is not None and t < best_t:
+                best_t = t
+
+        if best_t == float('inf'):
+            best_t = self.treshold # Fallback si aucun mur trouvé
+
+        return (ox + dx * best_t, oy + dy * best_t)
+
+    def recompute_finish_line(self, spawn_point, walls):
+        """
+        Recalcule la ligne d'arrivée (à appeler lors d'une rotation de circuit).
+        """
+        A, B = self._compute_finish_line(spawn_point, walls)
+        self.finish_line_A = torch.tensor(A, dtype=torch.float32, device=self.device)
+        self.finish_line_B = torch.tensor(B, dtype=torch.float32, device=self.device)
+
+    #  Détection de franchissement de la ligne d'arrivée
+    def _crosses_finish_line(self, positions):
+        """
+        Détecte les voitures qui ont franchi le segment finish_A → finish_B
+        entre le step précédent et maintenant.
+
+        Utilise le test d'intersection segment-segment vectorisé (2D).
+        Faux positif au spawn impossible : au step 0, r = (0,0) → cross_rs ≈ 0
+        → t très grand → crossed = False.
+        """
+        P = self.prev_positions # (N, 2)
+        Q = positions # (N, 2)
+        A = self.finish_line_A # (2,)
+        B = self.finish_line_B # (2,)
+
+        r   = Q - P # (N, 2) déplacement de la voiture
+        s   = B - A # (2,)   vecteur de la ligne d'arrivée
+        AmP = A.unsqueeze(0) - P # (N, 2) vecteur de P vers A
+
+        # Produits vectoriels 2D
+        cross_rs = r[:, 0] * s[1] - r[:, 1] * s[0] # (N,)
+        cross_AmP_s = AmP[:, 0] * s[1] - AmP[:, 1] * s[0] # (N,)
+        cross_AmP_r = AmP[:, 0] * r[:, 1]  - AmP[:, 1] * r[:, 0] # (N,)
+
+        eps        = 1e-9
+        safe_denom = torch.where(
+            torch.abs(cross_rs) > eps,
+            cross_rs,
+            torch.full_like(cross_rs, eps)
+        )
+
+        t = cross_AmP_s / safe_denom # Position sur le déplacement voiture  dans [0,1] si ce step
+        u = cross_AmP_r / safe_denom # Position sur la ligne d'arrivée dans [0,1] si dans le segment
+
+        return (t >= 0) & (t <= 1) & (u >= 0) & (u <= 1)
+
+    #  Reset
     def reset(self):
-        """Réinitialise toutes les métriques pour une nouvelle génération"""
+        """Réinitialise toutes les métriques pour une nouvelle génération."""
         self.survival_time.zero_()
         self.speed_sum.zero_()
         self.laps_completed.zero_()
         self.checkpoints_passed.zero_()
         self.checkpoint_status.zero_()
         self.first_checkpoint_direction.zero_()
-        self.last_spawn_distance.fill_(0.0)
-    
+        # Initialiser prev_positions au spawn (r = 0 au step 0 → pas de faux positif)
+        self.prev_positions[:, 0] = self.spawn_point[0]
+        self.prev_positions[:, 1] = self.spawn_point[1]
+
+    #  Update
     def update(self, positions, speeds, alive_mask):
         """
-        Mise à jour des métriques à chaque step
-        
+        Mise à jour des métriques à chaque step.
+
         Args:
-            positions: Tensor (n_cars, 2) - positions (x, y)
-            speeds: Tensor (n_cars, 1) - vitesses
-            alive_mask: Tensor (n_cars,) - booléen, True si vivant
+            positions:  Tensor (n_cars, 2) - positions (x, y)
+            speeds:     Tensor (n_cars, 1) - vitesses
+            alive_mask: Tensor (n_cars,)   - booléen, True si vivant
         """
-        # Incrémenter le temps de survie pour les voitures vivantes
         self.survival_time += alive_mask.float()
-        
-        # Accumuler la vitesse pour calcul de la moyenne
         self.speed_sum += speeds.squeeze() * alive_mask.float()
-        
-        # Vérifier les passages de checkpoints
+
         self._check_checkpoints(positions, alive_mask)
-        
-        # Vérifier les tours complets
         self._check_lap_completion(positions, alive_mask)
-    
+
+    #  Checkpoints intermédiaires
     def _check_checkpoints(self, positions, alive_mask):
         """
-        Vérifie si des voitures ont franchi des nouveaux checkpoints
-        
-        Utilise la distance euclidienne avec un seuil de détection
-        """        
-        # Pour chaque checkpoint
+        Vérifie si des voitures ont franchi de nouveaux checkpoints.
+        Utilise la distance euclidienne avec un seuil = track_width.
+        """
         for cp_idx in range(self.n_checkpoints):
             cp_pos = self.checkpoints[cp_idx]  # (2,)
-            
-            # Distance de chaque voiture à ce checkpoint (vectorisé)
-            # (n_cars, 2) - (2,) -> (n_cars, 2)
+
             diff = positions - cp_pos.unsqueeze(0)
             distances = torch.norm(diff, dim=1)  # (n_cars,)
-            
-            # Voitures qui sont dans le rayon ET n'ont pas encore passé ce checkpoint
+
             in_radius = distances < self.treshold
             not_passed_yet = ~self.checkpoint_status[:, cp_idx]
             newly_passed = in_radius & not_passed_yet & alive_mask
-            
-            # Marquer comme passé
+
             self.checkpoint_status[:, cp_idx] |= newly_passed
-            
-            # Incrémenter le compteur de checkpoints
             self.checkpoints_passed += newly_passed.int()
-            
-            # Déterminer le sens de rotation (première fois qu'on passe un checkpoint)
+
             first_timers = newly_passed & (self.first_checkpoint_direction == 0)
             if first_timers.any():
-                # Si c'est le checkpoint N, déterminer le sens
-                # Sens horaire = checkpoints dans l'ordre croissant
-                # Sens anti-horaire = checkpoints dans l'ordre décroissant
-                self.first_checkpoint_direction[first_timers] = 1 if cp_idx < self.n_checkpoints // 2 else -1
-    
+                self.first_checkpoint_direction[first_timers] = (
+                    1 if cp_idx < self.n_checkpoints // 2 else -1
+                )
+
+    #  Détection de tour complet et raccourcis
     def _check_lap_completion(self, positions, alive_mask):
         """
-        Détecte quand une voiture termine un tour complet
-        
-        Critère: tous les checkpoints passés + retour au spawn
-        """        
-        # Distance au spawn
-        diff = positions - self.spawn_tensor.unsqueeze(0)
-        spawn_distances = torch.norm(diff, dim=1)
-        
-        # Voitures qui ont passé tous les checkpoints
+        Détecte les tours complets et les raccourcis via le franchissement
+        de la ligne d'arrivée (segment perpendiculaire au spawn).
+        """
         all_checkpoints_passed = self.checkpoint_status.all(dim=1)
-        
-        # Voitures qui sont revenues au spawn
-        near_spawn = spawn_distances < self.treshold
-        
-        # Voitures qui étaient loin du spawn au step précédent (évite multi-comptage)
-        was_far = self.last_spawn_distance > self.treshold
+        crossed = self._crosses_finish_line(positions)
 
-        # Raccourci = près du spawn + on était loin + checkpoints incomplets + vivant
-        shortcut = ~all_checkpoints_passed & near_spawn & was_far & alive_mask
-        alive_mask[shortcut] = False  # Tuer les tricheurs
-        
-        # Tour complet = tous checkpoints + retour au spawn + on était loin avant
-        lap_completed = all_checkpoints_passed & near_spawn & was_far & alive_mask
-        
-        # Incrémenter les tours
-        self.laps_completed += lap_completed.int()
-        
-        # Réinitialiser les checkpoints pour ceux qui ont fini un tour
-        self.checkpoint_status[lap_completed] = False
+        # Raccourci : franchissement de la ligne sans avoir tout coché → tuer
+        shortcut = ~all_checkpoints_passed & crossed & alive_mask
+        alive_mask[shortcut] = False
+
+        # Tour complet : franchissement de la ligne avec tous les checkpoints cochés
+        lap_completed = all_checkpoints_passed & crossed & alive_mask
+        self.laps_completed  += lap_completed.int()
+        self.checkpoint_status[lap_completed]  = False
         self.checkpoints_passed[lap_completed] = 0
-        
-        # Mettre à jour la distance au spawn
-        self.last_spawn_distance = spawn_distances
-    
+
+        # Mettre à jour les positions précédentes pour le prochain step
+        self.prev_positions = positions.clone()
+
+    #  Fitness
     def compute_fitness(self):
         """
-        Calcule le score final de chaque voiture
-        
-        Formule: fitness = (temps_survie) × (vitesse_moyenne) × (1 + tours) × bonus_sens
-        
-        Returns:
-            Tensor (n_cars,) - scores de fitness
+        Calcule le score final de chaque voiture.
+
+        Formule : fitness = survie × vitesse_moyenne × (1 + tours) × sens × checkpoints
         """
-        # Vitesse moyenne (éviter division par zéro)
         avg_speed = self.speed_sum / torch.clamp(self.survival_time, min=1.0)
-        
-        # Bonus de tours (exponentiel pour récompenser fortement les tours complets)
         lap_bonus = 1.0 + self.laps_completed.float()
-        
-        # Bonus de sens (récompenser le bon sens)
-        # Si first_checkpoint_direction == 1 (sens horaire attendu), bonus x1.5
-        # Si == -1 (anti-horaire), malus x0.5
-        # Si == 0 (pas encore déterminé), neutre x1.0
+
         direction_bonus = torch.ones(self.n_cars, device=self.device)
-        direction_bonus[self.first_checkpoint_direction == 1] = 1.5
+        direction_bonus[self.first_checkpoint_direction ==  1] = 1.5
         direction_bonus[self.first_checkpoint_direction == -1] = 0.5
-        
-        # Bonus pour les checkpoints passés (même sans finir le tour)
+
         checkpoint_bonus = 1.0 + (self.checkpoints_passed.float() / self.n_checkpoints) * 0.5
-        
-        # Formule finale
-        fitness = (
-            self.survival_time 
-            * avg_speed 
-            * lap_bonus 
-            * direction_bonus 
+
+        return (
+            self.survival_time
+            * avg_speed
+            * lap_bonus
+            * direction_bonus
             * checkpoint_bonus
         )
-        
-        return fitness
-    
+
+    #  Utilitaires
     def get_rankings(self):
-        """
-        Retourne les indices des voitures triées par fitness (meilleur → pire)
-        
-        Returns:
-            Tensor (n_cars,) - indices triés
-        """
-        fitness = self.compute_fitness()
-        sorted_indices = torch.argsort(fitness, descending=True)
-        return sorted_indices
-    
+        """Retourne les indices des voitures triées par fitness (meilleur → pire)."""
+        return torch.argsort(self.compute_fitness(), descending=True)
+
     def get_statistics(self):
-        """
-        Retourne des statistiques pour affichage/logging
-        
-        Returns:
-            dict avec clés: best_fitness, avg_fitness, max_laps, avg_survival
-        """
+        """Retourne des statistiques pour affichage/logging."""
         fitness = self.compute_fitness()
-        
         return {
-            'best_fitness': fitness.max().item(),
-            'avg_fitness': fitness.mean().item(),
-            'max_laps': self.laps_completed.max().item(),
-            'avg_laps': self.laps_completed.float().mean().item(),
-            'avg_survival': self.survival_time.mean().item(),
+            'best_fitness':  fitness.max().item(),
+            'avg_fitness':   fitness.mean().item(),
+            'max_laps':      self.laps_completed.max().item(),
+            'avg_laps':      self.laps_completed.float().mean().item(),
+            'avg_survival':  self.survival_time.mean().item(),
             'best_survival': self.survival_time.max().item(),
         }
-    
+
     def get_render_checkpoints(self):
-        """
-        Retourne les données pour afficher les checkpoints dans PyGame
-        
-        Returns:
-            numpy array (n_checkpoints, 2) - positions des checkpoints
-        """
+        """Retourne les positions des checkpoints pour l'affichage PyGame."""
         return self.checkpoints.cpu().numpy()
+
+    def get_render_finish_line(self):
+        """Retourne les extrémités de la ligne d'arrivée pour l'affichage PyGame."""
+        return (
+            tuple(self.finish_line_A.cpu().numpy()),
+            tuple(self.finish_line_B.cpu().numpy()),
+        )

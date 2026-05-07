@@ -354,14 +354,14 @@ class TrainingLoop:
         self.walls = cfg["walls"]
 
         new_checkpoints = cfg["checkpoints"]
-        n_new           = len(new_checkpoints)
+        n_new = len(new_checkpoints)
 
         self.fitness_tracker.checkpoints = torch.tensor(
             new_checkpoints, dtype=torch.float32,
             device=self.fitness_tracker.device
         )
         self.fitness_tracker.n_checkpoints = n_new
-        self.fitness_tracker.spawn_point   = (
+        self.fitness_tracker.spawn_point = (
             self.env.spawn_x, self.env.spawn_y, self.env.spawn_angle
         )
         self.fitness_tracker.spawn_tensor = torch.tensor(
