@@ -1,4 +1,0 @@
-Circuits       : speed_ring_gt
-Population     : 100
-Générations    : 100
-Rayons         : 9
