@@ -50,9 +50,7 @@ class FitnessTracker:
         self.prev_positions = torch.zeros((n_cars, 2), device=self.device)
 
         # Calcul et stockage de la ligne d'arrivée (segment A → B perpendiculaire au spawn)
-        A, B = self._compute_finish_line(spawn_point, walls)
-        self.finish_line_A = torch.tensor(A, dtype=torch.float32, device=self.device)
-        self.finish_line_B = torch.tensor(B, dtype=torch.float32, device=self.device)
+        self._compute_finish_line(spawn_point, walls)
 
     #  Calcul de la ligne d'arrivée
     def _compute_finish_line(self, spawn_point, walls):
@@ -62,12 +60,19 @@ class FitnessTracker:
         """
         ox, oy, theta = spawn_point
 
+        # Décalage vers l'arrière pour que les voitures spawnent devant la ligne
+        offset_dist = self.treshold * 0.3
+        ox_shifted = ox - math.cos(theta) * offset_dist
+        oy_shifted = oy - math.sin(theta) * offset_dist
+
         perp_left = (math.cos(theta + math.pi / 2), math.sin(theta + math.pi / 2))
         perp_right = (math.cos(theta - math.pi / 2), math.sin(theta - math.pi / 2))
 
-        A = self._cast_ray((ox, oy), perp_left,  walls)
-        B = self._cast_ray((ox, oy), perp_right, walls)
-        return A, B
+        A = self._cast_ray((ox_shifted, oy_shifted), perp_left,  walls)
+        B = self._cast_ray((ox_shifted, oy_shifted), perp_right, walls)
+
+        self.finish_line_A = torch.tensor(A, dtype=torch.float32, device=self.device)
+        self.finish_line_B = torch.tensor(B, dtype=torch.float32, device=self.device)        
 
     def _cast_ray(self, origin, direction, walls):
         """
@@ -90,14 +95,6 @@ class FitnessTracker:
             best_t = self.treshold # Fallback si aucun mur trouvé
 
         return (ox + dx * best_t, oy + dy * best_t)
-
-    def recompute_finish_line(self, spawn_point, walls):
-        """
-        Recalcule la ligne d'arrivée (à appeler lors d'une rotation de circuit).
-        """
-        A, B = self._compute_finish_line(spawn_point, walls)
-        self.finish_line_A = torch.tensor(A, dtype=torch.float32, device=self.device)
-        self.finish_line_B = torch.tensor(B, dtype=torch.float32, device=self.device)
 
     #  Détection de franchissement de la ligne d'arrivée
     def _crosses_finish_line(self, positions):

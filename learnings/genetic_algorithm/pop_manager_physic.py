@@ -364,9 +364,9 @@ class TrainingLoop:
         self.fitness_tracker.spawn_point = (
             self.env.spawn_x, self.env.spawn_y, self.env.spawn_angle
         )
-        self.fitness_tracker.spawn_tensor = torch.tensor(
-            [self.env.spawn_x, self.env.spawn_y],
-            dtype=torch.float32, device=self.fitness_tracker.device
+        self.fitness_tracker._compute_finish_line(
+            (self.env.spawn_x, self.env.spawn_y, self.env.spawn_angle),
+            cfg["walls"]
         )
         self.fitness_tracker.checkpoint_status = torch.zeros(
             (self.fitness_tracker.n_cars, n_new),

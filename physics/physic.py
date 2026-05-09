@@ -49,12 +49,12 @@ DT = 0.05
 # Pas de temps en secondes/step.
 # Partagé avec tous les systems (tire_system_gpu, fuel_system_gpu...).
 
-BASE_MAX_SPEED = 90.0
+BASE_MAX_SPEED = 60.0
 # Vitesse max théorique en px/s avec grip = 1.0 (Soft neuf sur sec).
 # -> déplacement max par step = 90 × 0.05 = 4.5 px
 # Calibré sur un tour Nascar en ~15 secondes (300 steps).
 
-ACCELERATION = 55.0
+ACCELERATION = 8.0
 # Accélération moteur MAX en px/s² (atteinte au pic de la courbe gaussienne).
 # Réduit de 80 -> 55 pour un temps de montée en vitesse plus réaliste.
 # Temps théorique pour atteindre vmax a plein gaz : ~4-5 secondes (vs ~1s avant).
@@ -77,8 +77,8 @@ BRAKE_FORCE = 130.0
 #   speed =  70% de vmax -> factor ≈ 0.51  (régime élevé)
 #   speed = 100% de vmax -> factor ≈ 0.10  (quasi-impossible d'accélérer encore)
 
-MU_RPM = 0.35   # Position du pic en fraction de vmax
-SIGMA_RPM = 0.30   # Largeur de la cloche (plus grand = courbe plus plate)
+MU_RPM = 0.50   # Position du pic en fraction de vmax
+SIGMA_RPM = 0.40   # Largeur de la cloche (plus grand = courbe plus plate)
 
 FRICTION = 0.992
 # Frottement passif appliqué chaque step (résistance de l'air + roulement).
@@ -88,7 +88,7 @@ STEERING_SENSITIVITY = 2.5
 # Vitesse angulaire max du volant en rad/s à vitesse max.
 # Exemple : 2.5 rad/s × 0.05 s = 0.125 rad/step à pleine vitesse.
 
-F_LAT_MAX_BASE = 33.0
+F_LAT_MAX_BASE = 25.0
 # Force latérale max supportable en px/s² avec grip = 1.0.
 # Dérivé de la géométrie Nascar : (0.77×90)²/160 / 0.91 ≈ 33.0
 # Multiplié par grip_multiplier dans le step pour donner la limite réelle.
@@ -98,7 +98,7 @@ K_DRIFT = 0.30
 # Augmenter -> la voiture part en dérive plus facilement.
 # Diminuer -> la voiture est plus tolérante avant de glisser.
 
-K_GRIP = 0.80
+K_GRIP = 0.85
 # Force de rappel du slip_angle vers 0, en 1/s, proportionnelle au grip.
 # Représente la capacité du pneu à récupérer la dérive.
 # K_GRIP/K_DRIFT = 0.80/0.30 ≈ 2.7 -> la dérive est récupérable si on lâche le gaz.

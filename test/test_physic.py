@@ -60,49 +60,33 @@ def parse_args():
     )
 
     # -- Entraînement ----------------------------------------------------------
-    parser.add_argument('--generations',       type=int,   default=100)
-    parser.add_argument('--population',        type=int,   default=1000)
-    parser.add_argument('--n_rays',            type=int,   default=9)
-    parser.add_argument('--save_every',        type=int,   default=10,
-                        help="Sauvegarder tous les N générations")
-    parser.add_argument('--device',            type=str,   default='cuda',
-                        choices=['cuda', 'cpu'])
-    parser.add_argument('--checkpoint',        type=str,   default=None,
-                        help="Chemin vers un checkpoint à reprendre")
-    parser.add_argument('--frequency_showgen', type=int,   default=-1,
-                        help="Afficher le rendu toutes les N générations (-1 = jamais)")
+    parser.add_argument('--generations', type=int, default=100)
+    parser.add_argument('--population', type=int, default=1000)
+    parser.add_argument('--n_rays', type=int, default=9)
+    parser.add_argument('--save_every', type=int, default=10, help="Sauvegarder tous les N générations")
+    parser.add_argument('--device', type=str, default='cuda', choices=['cuda', 'cpu'])
+    parser.add_argument('--checkpoint', type=str, default=None, help="Chemin vers un checkpoint à reprendre")
+    parser.add_argument('--frequency_showgen', type=int, default=-1, help="Afficher le rendu toutes les N générations (-1 = jamais)")
 
     # -- Circuits --------------------------------------------------------------
-    parser.add_argument('--random_train', type=int, default=1,
-                        help="Nombre de circuits (triés par difficulté). 0 = utiliser --circuit")
-    parser.add_argument('--circuit',      type=str, nargs='+', default=['nascar'],
-                        choices=['nascar', 'rectangle', 'speed_ring_gt', 'w_track'],
-                        help="Circuit(s) à utiliser si --random_train 0")
-    parser.add_argument('--nb_laps',  type=int, default=1,
-                        help="Tours pour terminer une génération (prioritaire sur nb_steps)")
-    parser.add_argument('--nb_steps', type=int, default=2000,
-                        help="Steps max par génération (fallback si nb_laps non atteint)")
+    parser.add_argument('--random_train', type=int, default=1, help="Nombre de circuits (triés par difficulté). 0 = utiliser --circuit")
+    parser.add_argument('--circuit', type=str, nargs='+', default=['nascar'], choices=['nascar', 'rectangle', 'speed_ring_gt', 'w_track'], help="Circuit(s) à utiliser si --random_train 0")
+    parser.add_argument('--nb_laps', type=int, default=1, help="Tours pour terminer une génération (prioritaire sur nb_steps)")
+    parser.add_argument('--nb_steps', type=int, default=2000, help="Steps max par génération (fallback si nb_laps non atteint)")
 
     # -- Mutation --------------------------------------------------------------
     parser.add_argument('--mutation_start', type=float, default=0.3)
     parser.add_argument('--mutation_end',   type=float, default=0.05)
     parser.add_argument('--mutation_decay', type=float, default=0.975)
 
-    # -- Systèmes (nouveaux en v2) ------------------------------------------
-    parser.add_argument('--rain_mode',    type=str,   default='fixed',
-                        choices=['fixed', 'dynamic', 'preset'],
-                        help="Mode d'évolution de la pluie")
-    parser.add_argument('--initial_rain', type=float, default=0.0,
-                        help="Intensité de pluie initiale [0.0=sec, 1.0=déluge]")
-    parser.add_argument('--compound',     type=str,   default='medium',
-                        choices=list(_COMPOUND_MAP.keys()),
-                        help="Composé de départ pour tous les agents")
+    # -- Systèmes physiques ------------------------------------------
+    parser.add_argument('--rain_mode', type=str, default='fixed', choices=['fixed', 'dynamic', 'preset'], help="Mode d'évolution de la pluie")
+    parser.add_argument('--initial_rain', type=float, default=0.0, help="Intensité de pluie initiale [0.0=sec, 1.0=déluge]")
+    parser.add_argument('--compound', type=str, default='medium', choices=list(_COMPOUND_MAP.keys()), help="Composé de départ pour tous les agents")
 
-    # -- Curriculum learning (nouveaux en v2) ----------------------------------
-    parser.add_argument('--phase2_gen',     type=int,   default=10,
-                        help="Génération de déclenchement de la phase 2 (-1 = désactivé)")
-    parser.add_argument('--phase2_fitness', type=float, default=None,
-                        help="Seuil avg_fitness pour déclencher la phase 2 (None = désactivé)")
+    # -- Curriculum learning (savoir quand on accède aux nouvelles actions) ----------------------------------
+    parser.add_argument('--phase2_gen', type=int, default=10, help="Génération de déclenchement de la phase 2 (-1 = désactivé)")
+    parser.add_argument('--phase2_fitness', type=float, default=None, help="Seuil avg_fitness pour déclencher la phase 2 (None = désactivé)")
 
     return parser.parse_args()
 
@@ -155,10 +139,10 @@ def main():
         for c in configs:
             print(f"  - {c['name']} (difficulté {c['difficulty']})")
 
-    cfg         = configs[0]
-    env         = cfg["env"]
+    cfg = configs[0]
+    env = cfg["env"]
     checkpoints = cfg["checkpoints"]
-    walls       = cfg["walls"]
+    walls = cfg["walls"]
 
     print(f"Voitures : {args.population} | Rayons : {args.n_rays} | Checkpoints : {len(checkpoints)}")
 
@@ -166,9 +150,10 @@ def main():
     fitness_tracker = FitnessTracker(
         checkpoints = checkpoints,
         spawn_point = (env.spawn_x, env.spawn_y, env.spawn_angle),
-        n_cars      = args.population,
+        n_cars = args.population,
         track_width = env.track_width,
-        device      = args.device,
+        walls = walls,
+        device = args.device,
     )
 
     # -- 4. PopulationManager -------------------------------------------------
