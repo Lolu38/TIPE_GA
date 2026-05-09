@@ -9,7 +9,6 @@ OFFSET_Y = 50
 
 CAR_SIZE = 5
 
-
 class VectorizedRenderer:
     """
     Renderer pour l'algo génétique : affiche N voitures simultanément.
@@ -32,10 +31,10 @@ class VectorizedRenderer:
         self.show_rays = show_rays
         self.show_dead = show_dead
 
-        # --- État interne pour render_step ---
         self._step = 0
-        self._last_gen = -1        # Détection de changement de génération
-        self._wall_surface = None  # Cache des murs (ne changent pas en cours de gen)
+        self._last_gen = -1
+        self._wall_surface = None
+        self.finish_line = None   # Stockage de la ligne d'arrivée
 
     # ------------------------------------------------------------------
     # Interface principale
@@ -46,49 +45,46 @@ class VectorizedRenderer:
         generation: int,
         render_data: dict,
         walls: list,
+        finish_line: tuple | None = None,
         ray_data: dict | None = None,
         stats: dict | None = None,
     ) -> bool:
         """
         À appeler à chaque step depuis TrainingLoop (quand render=True).
-        Le filtrage par fréquence de génération est géré en amont par TrainingLoop.
 
         Paramètres
         ----------
-        generation : int
-            Numéro de la génération en cours
-        render_data : dict
-            get_render_data() → "pos" (N,2), "angle" (N,1), "alive" (N,)
-        walls : list
-            Liste de tuples ((x1,y1), (x2,y2))
-        ray_data : dict | None
-            Optionnel : "origins" (N,2), "directions" (N,R,2), "distances" (N,R)
-        stats : dict | None
-            Infos libres à afficher dans le HUD
-
-        Retourne
-        --------
-        bool : False si l'utilisateur ferme la fenêtre
+        generation: int
+        render_data: dict       -> "pos" (N,2), "angle" (N,1), "alive" (N,)
+        walls: list       -> liste de tuples ((x1,y1), (x2,y2))
+        finish_line: tuple|None -> (A, B) retourné par get_render_finish_line()
+        ray_data: dict|None  -> "origins", "directions", "distances"
+        stats: dict|None  -> infos libres pour le HUD
         """
-        # --- Détection de début de nouvelle génération ---
         if generation != self._last_gen:
             self._step = 0
             self._last_gen = generation
-            self._wall_surface = None  # Invalider le cache (circuit potentiellement différent)
+            self._wall_surface = None
         else:
             self._step += 1
 
-        # --- Dessin ---
+        # Mémoriser la ligne d'arrivée dès qu'on la reçoit
+        if finish_line is not None:
+            self.finish_line = finish_line
+
         self.screen.fill((20, 20, 20))
 
-        # Murs en cache : tracés une seule fois par génération
         if self._wall_surface is None:
             self._wall_surface = self._build_wall_surface(walls)
         self.screen.blit(self._wall_surface, (0, 0))
 
-        pos    = render_data["pos"]    # (N, 2)
-        angles = render_data["angle"]  # (N, 1)
-        alive  = render_data["alive"]  # (N,)  bool
+        # Ligne d'arrivée dessinée directement sur self.screen (évite le bug SRCALPHA)
+        if self.finish_line is not None:
+            self._draw_finish_line(self.screen, self.finish_line)
+
+        pos    = render_data["pos"]
+        angles = render_data["angle"]
+        alive  = render_data["alive"]
 
         if self.show_rays and ray_data is not None:
             self._draw_rays(ray_data, alive)
@@ -104,7 +100,6 @@ class VectorizedRenderer:
     # ------------------------------------------------------------------
     # Dessin interne
     # ------------------------------------------------------------------
-
     def _build_wall_surface(self, walls: list) -> pygame.Surface:
         """Pré-rend les murs dans une Surface dédiée (cache)."""
         surf = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
@@ -120,16 +115,57 @@ class VectorizedRenderer:
             )
         return surf
 
+    def _draw_finish_line(
+        self,
+        surf: pygame.Surface,
+        finish_line: tuple,
+        n_cols: int = 10,
+        n_rows: int = 2,
+        epsilon: float = 8.0,
+    ):
+        A = np.array(finish_line[0], dtype=float)
+        B = np.array(finish_line[1], dtype=float)
+
+        AB = B - A
+        ab_len = np.linalg.norm(AB)
+        if ab_len < 1e-6:
+            return
+
+        ab_dir    = AB / ab_len
+        track_dir = np.array([ab_dir[1], -ab_dir[0]])
+
+        for i in range(n_cols):
+            for j in range(n_rows):
+                t0 = i       / n_cols
+                t1 = (i + 1) / n_cols
+
+                s0 = -epsilon + j       * (2 * epsilon / n_rows)
+                s1 = -epsilon + (j + 1) * (2 * epsilon / n_rows)
+
+                color = (255, 255, 255) if (i + j) % 2 == 0 else (0, 0, 0)
+
+                p0 = A + t0 * AB + s0 * track_dir
+                p1 = A + t1 * AB + s0 * track_dir
+                p2 = A + t1 * AB + s1 * track_dir
+                p3 = A + t0 * AB + s1 * track_dir
+
+                quad = [
+                    self._to_screen(p0[0], p0[1]),
+                    self._to_screen(p1[0], p1[1]),
+                    self._to_screen(p2[0], p2[1]),
+                    self._to_screen(p3[0], p3[1]),
+                ]
+                pygame.draw.polygon(surf, color, quad)
+
     def _draw_cars(self, pos: np.ndarray, angles: np.ndarray, alive: np.ndarray):
         angles_flat = angles.flatten()
 
         for i in range(len(pos)):
             is_alive = bool(alive[i])
-
             if not is_alive and not self.show_dead:
                 continue
 
-            x, y = pos[i]
+            x, y  = pos[i]
             theta = float(angles_flat[i])
             color = (80, 220, 80) if is_alive else (200, 0, 0)
             px, py = self._to_screen(x, y)
@@ -142,12 +178,6 @@ class VectorizedRenderer:
             pygame.draw.polygon(self.screen, color, triangle)
 
     def _draw_rays(self, ray_data: dict, alive: np.ndarray):
-        """
-        ray_data doit contenir :
-          - "origins"    : (N, 2)
-          - "directions" : (N, R, 2)
-          - "distances"  : (N, R)
-        """
         origins    = ray_data["origins"]
         directions = ray_data["directions"]
         distances  = ray_data["distances"]
@@ -186,13 +216,14 @@ class VectorizedRenderer:
 
         if stats:
             for k, v in stats.items():
-                lines.append(f"{k:<12}: {v:.3f}" if isinstance(v, float) else f"{k:<12}: {v}")
+                lines.append(
+                    f"{k:<12}: {v:.3f}" if isinstance(v, float) else f"{k:<12}: {v}"
+                )
 
         for i, line in enumerate(lines):
             surf = self.font.render(line, True, (220, 220, 220))
             self.screen.blit(surf, (10, 10 + i * 20))
 
-        # Barre de survie
         bar_x, bar_y = 10, HEIGHT - 20
         bar_w = WIDTH - 20
         pygame.draw.rect(self.screen, (60, 60, 60),  (bar_x, bar_y, bar_w, 10))
@@ -206,7 +237,6 @@ class VectorizedRenderer:
         return int(x * SCALE + OFFSET_X), int(y * SCALE + OFFSET_Y)
 
     def _poll_events(self) -> bool:
-        """Retourne False si l'utilisateur ferme la fenêtre (Échap ou croix)."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False

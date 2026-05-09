@@ -406,14 +406,14 @@ class TrainingLoop:
             observations, rewards, dones = self.env.step(actions)
 
             self.fitness_tracker.update(
-                positions  = self.env.pos,
-                speeds     = self.env.speed,
+                positions = self.env.pos,
+                speeds = self.env.speed,
                 alive_mask = self.env.alive,
             )
 
             if render:
-                render_data   = self.env.get_render_data()
-                still_running = self.renderer.render_step(generation, render_data, self.walls)
+                render_data = self.env.get_render_data()
+                still_running = self.renderer.render_step(generation, render_data, self.walls, self.fitness_tracker.get_render_finish_line())
                 if not still_running:
                     return None
 

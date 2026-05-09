@@ -121,13 +121,13 @@ def main():
 
     # -- 2. Circuits -----------------------------------------------------------
     configs = load_circuits(
-        n                = args.random_train if args.random_train > 0 else None,
-        names            = args.circuit      if args.random_train == 0 else None,
-        n_cars           = args.population,
-        n_rays           = args.n_rays,
-        device           = args.device,
-        rain_mode        = args.rain_mode,
-        initial_rain     = args.initial_rain,
+        n = args.random_train if args.random_train > 0 else None,
+        names = args.circuit      if args.random_train == 0 else None,
+        n_cars = args.population,
+        n_rays = args.n_rays,
+        device = args.device,
+        rain_mode = args.rain_mode,
+        initial_rain = args.initial_rain,
         initial_compound = initial_compound,
     )
 
@@ -158,12 +158,12 @@ def main():
 
     # -- 4. PopulationManager -------------------------------------------------
     population_manager = PopulationManager(
-        n_population          = args.population,
-        n_rays                = args.n_rays,
+        n_population = args.population,
+        n_rays = args.n_rays,
         initial_mutation_rate = args.mutation_start,
-        final_mutation_rate   = args.mutation_end,
-        mutation_decay        = args.mutation_decay,
-        device                = args.device,
+        final_mutation_rate = args.mutation_end,
+        mutation_decay = args.mutation_decay,
+        device = args.device,
     )
 
     # -- 5. Checkpoint ---------------------------------------------------------
@@ -173,36 +173,36 @@ def main():
 
     # -- 6. TrainingLoop -------------------------------------------------------
     training_loop = TrainingLoop(
-        env                = env,
+        env = env,
         population_manager = population_manager,
-        fitness_tracker    = fitness_tracker,
-        frequency_show     = args.frequency_showgen,
-        walls              = walls,
-        all_configs        = configs,
-        max_laps           = args.nb_laps,
-        max_steps          = args.nb_steps,
-        phase2_gen         = phase2_gen,
-        phase2_fitness     = args.phase2_fitness,
+        fitness_tracker = fitness_tracker,
+        frequency_show = args.frequency_showgen,
+        walls = walls,
+        all_configs = configs,
+        max_laps = args.nb_laps,
+        max_steps = args.nb_steps,
+        phase2_gen = phase2_gen,
+        phase2_fitness = args.phase2_fitness,
     )
 
     # -- 7. Dossier de sauvegarde ----------------------------------------------
     circuit_names = "_".join(c["name"] for c in configs)
-    timestamp     = datetime.now().strftime("%Y%m%d_%H%M%S")
-    save_dir      = f"checkpoints/{circuit_names}_{timestamp}"
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    save_dir = f"checkpoints/{circuit_names}_{timestamp}"
     os.makedirs(save_dir, exist_ok=True)
 
     # Sauvegarder la config lisiblement
     config_path = os.path.join(save_dir, "config.txt")
     with open(config_path, 'w') as f:
-        f.write(f"Circuits       : {circuit_names}\n")
-        f.write(f"Population     : {args.population}\n")
-        f.write(f"Générations    : {args.generations}\n")
-        f.write(f"Rayons         : {args.n_rays}\n")
-        f.write(f"Mutation       : {args.mutation_start} -> {args.mutation_end} (decay={args.mutation_decay})\n")
-        f.write(f"Device         : {args.device}\n")
-        f.write(f"Pluie          : {args.rain_mode} (init={args.initial_rain})\n")
-        f.write(f"Composé        : {args.compound}\n")
-        f.write(f"Phase 2 gen    : {phase2_gen}\n")
+        f.write(f"Circuits: {circuit_names}\n")
+        f.write(f"Population: {args.population}\n")
+        f.write(f"Générations: {args.generations}\n")
+        f.write(f"Rayons: {args.n_rays}\n")
+        f.write(f"Mutation: {args.mutation_start} -> {args.mutation_end} (decay={args.mutation_decay})\n")
+        f.write(f"Device: {args.device}\n")
+        f.write(f"Pluie: {args.rain_mode} (init={args.initial_rain})\n")
+        f.write(f"Composé: {args.compound}\n")
+        f.write(f"Phase 2 gen: {phase2_gen}\n")
         f.write(f"Phase 2 fitness: {args.phase2_fitness}\n")
 
     print(f"\nSauvegardes dans : {save_dir}")
@@ -213,8 +213,8 @@ def main():
 
     training_loop.train(
         n_generations = args.generations,
-        save_every    = args.save_every,
-        save_path     = save_dir,
+        save_every = args.save_every,
+        save_path = save_dir,
     )
 
     # -- 9. Statistiques finales -----------------------------------------------
