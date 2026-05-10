@@ -9,7 +9,7 @@ Identique à circuits_loader.py avec deux différences :
   2. Accepte rain_mode, initial_rain, initial_compound
      pour configurer les systèmes dès la construction de l'env.
 
-Contrat attendu dans chaque circuit_*.py (identique à v1) :
+Contrat attendu dans chaque circuit_*.py:
     get_name()        -> str
     get_difficulty()  -> int
     get_walls()       -> list of ((x1,y1),(x2,y2))
@@ -34,7 +34,7 @@ _REQUIRED = (
 )
 
 
-# -- Chargement dynamique (identique à v1) ------------------------------------
+# -- Chargement dynamique ------------------------------------
 
 def _load_module(path: Path):
     module_name = f"_circuit_dyn_{path.stem}"
@@ -125,11 +125,6 @@ def load_circuits(
 ) -> list:
     """
     Charge tous les circuits valides et retourne une liste de configs.
-
-    Paramètres supplémentaires par rapport à v1 :
-        rain_mode        : 'fixed' | 'dynamic' | 'preset'
-        initial_rain     : intensité initiale de la pluie [0, 1]
-        initial_compound : composé de départ (constantes dans tire_system_gpu.py)
     """
     tracks_path   = Path(tracks_dir)
     circuit_files = sorted(tracks_path.glob("circuit_*.py"))

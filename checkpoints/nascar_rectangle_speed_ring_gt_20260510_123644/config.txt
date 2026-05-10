@@ -1,0 +1,10 @@
+Circuits: nascar_rectangle_speed_ring_gt
+Population: 1000
+Générations: 50
+Rayons: 9
+Mutation: 0.3 -> 0.05 (decay=0.975)
+Device: cuda
+Pluie: fixed (init=0.0)
+Composé: medium
+Phase 2 gen: None
+Phase 2 fitness: None

@@ -210,27 +210,34 @@ class FitnessTracker:
 
     #  Fitness
     def compute_fitness(self):
-        """
-        Calcule le score final de chaque voiture.
-
-        Formule : fitness = survie × vitesse_moyenne × (1 + tours) × sens × checkpoints
-        """
         avg_speed = self.speed_sum / torch.clamp(self.survival_time, min=1.0)
-        lap_bonus = 1.0 + self.laps_completed.float()
 
         direction_bonus = torch.ones(self.n_cars, device=self.device)
-        direction_bonus[self.first_checkpoint_direction ==  1] = 1.5
+        direction_bonus[self.first_checkpoint_direction == 1] = 1.5
         direction_bonus[self.first_checkpoint_direction == -1] = 0.5
 
         checkpoint_bonus = 1.0 + (self.checkpoints_passed.float() / self.n_checkpoints) * 0.5
 
-        return (
+        has_laps = self.laps_completed > 0
+
+        # Lap agents : uniquement laps/steps — plus c'est rapide, mieux c'est
+        # 1e8 garantit que tout agent avec tour domine tout agent sans tour
+        lap_fitness = (
+            self.laps_completed.float()
+            / torch.clamp(self.survival_time, min=1.0)
+            * 1e8
+            * direction_bonus
+        )
+
+        # Non-lap agents : survie + vitesse + checkpoints (inchangé)
+        no_lap_fitness = (
             self.survival_time
             * avg_speed
-            * lap_bonus
-            * direction_bonus
             * checkpoint_bonus
+            * direction_bonus
         )
+
+        return torch.where(has_laps, lap_fitness, no_lap_fitness)
 
     #  Utilitaires
     def get_rankings(self):

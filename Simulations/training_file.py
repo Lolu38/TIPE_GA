@@ -1,17 +1,17 @@
 """
-test_physic.py — Test AG avec physique réaliste
+training_file.py — Entrainement AG avec physique réaliste
 ============================================================
 
 Coordonne :
-  - neuronal_env_v2     (physique réaliste, pneus, carburant, pluie)
-  - neural_network_v2   (4 sorties, entrées étendues)
-  - pop_manager_v2      (curriculum learning phases 1 & 2)
+  - neuronal_env_physic     (physique réaliste, pneus, carburant, pluie)
+  - neural_network_physic   (4 sorties, entrées étendues)
+  - pop_manager_physic      (curriculum learning phases 1 & 2)
   - fitness_tracker     (inchangé)
-  - circuits_loader_v2  (instancie neuronal_env_v2)
+  - circuits_loader_physic  (instancie neuronal_env_physic)
 
 Usage :
     # Entraînement basique (piste sèche, Medium)
-    python -m test.test_physic  --generations 100 --population 100 --frequency_showgen 0 --random_train 0 --circuit speed_ring_gt --nb_laps 1 --nb_steps 2000
+    python -m test.test_physic  --generations 100 --population 100 --frequency_showgen 0 --random_train 0 --circuit speed_ring_gt --nb_laps 1 --nb_steps 2000 --phase2_gen 2000
 
     # Pluie dynamique, démarrage en Wet, phase 2 à la génération 20
     python -m test.test_genetic_v2 --generations 100 --rain_mode dynamic --initial_rain 0.5 --compound wet --phase2_gen 20
@@ -33,7 +33,6 @@ import torch
 import argparse
 from datetime import datetime
 
-from learnings.genetic_algorithm.show_improve import main as show_main
 from learnings.genetic_algorithm.fitness_tracker import FitnessTracker
 from learnings.genetic_algorithm.pop_manager_physic  import PopulationManager, TrainingLoop
 from tracks.circuits_loader import load_circuits
@@ -109,7 +108,7 @@ def main():
         print(f"VRAM : {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB")
 
     initial_compound = _COMPOUND_MAP[args.compound]
-    phase2_gen       = args.phase2_gen if args.phase2_gen >= 0 else None
+    phase2_gen = args.phase2_gen if args.phase2_gen >= 0 else None
 
     print(
         f"\nSystèmes : pluie={args.rain_mode} (init={args.initial_rain:.2f}) | "
@@ -226,7 +225,7 @@ def main():
 
     do_visu = input("\nAfficher les courbes de progression ? (Y/N) : ").strip().upper()
     if do_visu == "Y":
-        
+        from learnings.genetic_algorithm.show_improve import main as show_main
         show_main(save_dir)
 
 
