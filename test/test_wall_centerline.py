@@ -1,33 +1,18 @@
 from envs.car_env_ray import SimpleCarEnv
-from tracks.nascar_ring import get_walls as gw_nascar, get_spawn as gs_nascar
-from tracks.simple_rectangle import get_walls as gw_rec, get_spawn as gs_rec
-from tracks.high_speed_ring_gt import get_center_line as gcl1, get_spawn as gs_gt
 from tracks.track_geometry import RectangularTrack, AngularTrack, generate_walls
 from tracks.Catmull_Rom_geometry import catmull_rom_spline
+from tracks.circuit_gp_chine import get_walls, get_spawn, get_width, _build_walls_width
 
-# ---------- Create python env ---------
-walls1 = gw_rec()
-spawn1 = gs_rec()
-track1 = RectangularTrack(walls1)
-# --- Rectangle for the number 1 ---
 
-outer1, inner1 = gw_nascar()
-spawn2 = gs_nascar()
-track2 = AngularTrack(outer1, inner1)
-walls2 = [(outer1[i], outer1[i+1]) for i in range (len(outer1)-1)] + [(inner1[i], inner1[i+1]) for i in range (len(inner1)-1)]
-# --- nascar for the number 2 ---
+outer4, inner4, _ = _build_walls_width()
+spawn4 = get_spawn()
+track4 = AngularTrack(outer4, inner4)
+walls4 = [(outer4[i], outer4[i+1]) for i in range (len(outer4)-1)] + [(inner4[i], inner4[i+1]) for i in range (len(inner4)-1)]
+width4 = get_width
+# --- suzuka for 4
 
-control_points = gcl1()
-centerline = catmull_rom_spline(control_points)
-outer2, inner2, width1 = generate_walls (centerline)
-track3 = AngularTrack(outer2, inner2)
-walls3 = [(outer2[i], outer2[i+1]) for i in range (len(outer2)-1)] + [(inner2[i], inner2[i+1]) for i in range (len(inner2)-1)]
-spawn3 = gs_gt()
-# --- high speed ring in Gran Turismo for 3
-
-env = SimpleCarEnv(spawn3, walls3, track3, width1, 5, render_mode="human")
+env = SimpleCarEnv(spawn4, walls4, track4, width4, 5, render_mode="human")
 obs, _ = env.reset()
-
 
 for _ in range(1000):
     action = env.action_space.sample() # Pour faire un peu de l'aléatoire et mieux tester le tout #1  # aucune dynamique

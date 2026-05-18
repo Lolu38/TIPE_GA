@@ -5,7 +5,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 # Usage:
-# python -m Simulations.show_comparison --nascar checkpoints/nascar_20260510_115319/gen_50.pt --gt checkpoints/speed_ring_gt_20260510_120005/gen_50.pt --multi checkpoints/nascar_rectangle_speed_ring_gt_20260510_123644/gen_50.pt
+# python -m Simulations.show_comparison --nascar checkpoints/nascar_20260510_115319/adaptation_w_track.pt --gt checkpoints/speed_ring_gt_20260510_120005/adaptation_w_track.pt --multi checkpoints/nascar_rectangle_speed_ring_gt_20260510_123644/adaptation_w_track.pt
 
 
 

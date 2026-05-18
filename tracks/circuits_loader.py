@@ -150,7 +150,7 @@ def load_circuits(
         modules   = [m for m in modules if m.get_name() in name_set]
         not_found = name_set - {m.get_name() for m in modules}
         if not_found:
-            print(f"[circuits_loader_v2] Circuits introuvables : {not_found}")
+            print(f"Circuits introuvables : {not_found}")
     elif n is not None:
         modules = modules[:n]
 
@@ -167,7 +167,7 @@ def load_circuits(
         raise RuntimeError("Aucun environnement n'a pu être construit.")
 
     print(
-        f"[circuits_loader_v2] {len(configs)} circuit(s) prêt(s) : "
+        f"Circuit loader: {len(configs)} circuit(s) prêt(s) : "
         + ", ".join(f"{c['name']}(diff={c['difficulty']})" for c in configs)
     )
     return configs

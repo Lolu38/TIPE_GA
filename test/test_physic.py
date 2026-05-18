@@ -71,7 +71,7 @@ def parse_args():
 
     # -- Circuits --------------------------------------------------------------
     parser.add_argument('--random_train', type=int, default=1, help="Nombre de circuits (triés par difficulté). 0 = utiliser --circuit")
-    parser.add_argument('--circuit', type=str, nargs='+', default=['nascar'], choices=['nascar', 'rectangle', 'speed_ring_gt', 'w_track'], help="Circuit(s) à utiliser si --random_train 0")
+    parser.add_argument('--circuit', type=str, nargs='+', default=['nascar'], choices=['nascar', 'rectangle', 'speed_ring_gt', 'w_track', 'gp_chine', 'gp_australie'], help="Circuit(s) à utiliser si --random_train 0")
     parser.add_argument('--nb_laps', type=int, default=1, help="Tours pour terminer une génération (prioritaire sur nb_steps)")
     parser.add_argument('--nb_steps', type=int, default=2000, help="Steps max par génération (fallback si nb_laps non atteint)")
 
@@ -109,7 +109,7 @@ def main():
         print(f"VRAM : {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB")
 
     initial_compound = _COMPOUND_MAP[args.compound]
-    phase2_gen       = args.phase2_gen if args.phase2_gen >= 0 else None
+    phase2_gen = args.phase2_gen if args.phase2_gen >= 0 else None
 
     print(
         f"\nSystèmes : pluie={args.rain_mode} (init={args.initial_rain:.2f}) | "

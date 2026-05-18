@@ -2,7 +2,7 @@ import pygame
 import math
 import numpy as np
 
-WIDTH, HEIGHT = 600, 600
+WIDTH, HEIGHT = 1000, 1000
 SCALE = 0.6
 OFFSET_X = 50
 OFFSET_Y = 50
@@ -29,7 +29,7 @@ class VectorizedRenderer:
         self.font = pygame.font.SysFont("monospace", 16)
 
         self.show_rays = show_rays
-        self.show_dead = show_dead
+        self.show_dead = False
 
         self._step = 0
         self._last_gen = -1

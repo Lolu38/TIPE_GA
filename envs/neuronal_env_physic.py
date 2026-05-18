@@ -53,7 +53,7 @@ PIT_TIRE_DURATION = 60    # ~3 secondes - changement pneus uniquement
 PIT_FULL_DURATION = 120   # ~6 secondes - pneus + plein de carburant
 
 # Rayon autour du spawn considéré comme zone de pit (pixels)
-PIT_ZONE_RADIUS = 10.0
+PIT_ZONE_RADIUS = 5.0
 
 # Seuil sigmoid pour déclencher un pit stop (> seuil -> pit)
 PIT_THRESHOLD = 0.5

@@ -72,7 +72,6 @@ def compute_track_length(centerline):
         length += math.hypot(x2 - x1, y2 - y1)
     return length
 
-    
 
 def generate_walls(centerline, width_ratio=0.01):
     """
