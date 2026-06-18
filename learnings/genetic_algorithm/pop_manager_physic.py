@@ -1,5 +1,5 @@
 """
-pop_manager_v2.py - Gestionnaire de population avec curriculum learning
+pop_manager_physic.py - Gestionnaire de population avec curriculum learning
 ========================================================================
 
 Changements par rapport à pop_manager.py :

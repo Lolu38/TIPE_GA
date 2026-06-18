@@ -28,11 +28,9 @@ Usage :
 
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-
 import torch
 import argparse
 from datetime import datetime
-
 from learnings.genetic_algorithm.fitness_tracker import FitnessTracker
 from learnings.genetic_algorithm.pop_manager_physic  import PopulationManager, TrainingLoop
 from tracks.circuits_loader import load_circuits

@@ -6,11 +6,7 @@ Sauvegarde le résultat dans le même dossier que le checkpoint source,
 sous le nom adaptation_w_track.pt (même architecture que les gen_N.pt).
 
 Usage :
-    python -m simulations.adaptation_wtrack \
-        --nascar  checkpoints/nascar_.../gen_50.pt \
-        --gt      checkpoints/speed_ring_gt_.../gen_50.pt \
-        --multi   checkpoints/nascar_rectangle_speed_ring_gt_.../gen_50.pt \
-        --n_adapt_gen 10
+    python -m simulations.adaptation_wtrack --nascar  checkpoints/nascar_.../gen_50.pt --gt      checkpoints/speed_ring_gt_.../gen_50.pt --multi   checkpoints/nascar_rectangle_speed_ring_gt_.../gen_50.pt  --n_adapt_gen 10
 """
 
 import os

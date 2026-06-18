@@ -1,0 +1,10 @@
+Circuits: nascar
+Population: 300
+Générations: 150
+Rayons: 9
+Mutation: 0.3 -> 0.05 (decay=0.975)
+Device: cuda
+Pluie: dynamic (init=0.0)
+Composé: medium
+Phase 2 gen: 50
+Phase 2 fitness: None

@@ -45,7 +45,7 @@ def _load_module(path: Path):
     try:
         spec.loader.exec_module(module)
     except Exception as e:
-        print(f"[circuits_loader_v2] ⚠  Impossible de charger {path.name} : {e}")
+        print(f"[circuits_loader_v2]  Impossible de charger {path.name} : {e}")
         return None
     sys.modules[module_name] = module
     return module
@@ -55,7 +55,7 @@ def _validate(module, path: Path) -> bool:
     missing = [fn for fn in _REQUIRED if not hasattr(module, fn)]
     if missing:
         print(
-            f"[circuits_loader_v2] ⚠  {path.name} ignoré — "
+            f"[circuits_loader_v2] {path.name} ignoré — "
             f"fonctions manquantes : {', '.join(missing)}"
         )
         return False
@@ -81,7 +81,7 @@ def _build_config(
         checkpoints = module.get_checkpoints()
         track       = module.get_track_geo()
     except Exception as e:
-        print(f"[circuits_loader_v2] ⚠  Erreur lecture '{name}' : {e}")
+        print(f"[circuits_loader_v2] Erreur lecture '{name}' : {e}")
         return None
 
     try:
@@ -98,7 +98,7 @@ def _build_config(
             initial_compound = initial_compound,
         )
     except Exception as e:
-        print(f"[circuits_loader_v2] ⚠  VectorizedCarEnv a échoué pour '{name}' : {e}")
+        print(f"[circuits_loader_v2] VectorizedCarEnv a échoué pour '{name}' : {e}")
         return None
 
     return {

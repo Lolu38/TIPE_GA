@@ -1,12 +1,12 @@
 """
-neuronal_env_v2.py - Environnement vectorisé GPU avec physique réaliste
+neuronal_env_physic.py - Environnement vectorisé GPU avec physique réaliste
 ========================================================================
 
 Changements par rapport à neuronal_env.py :
 
   Physique
     - heading  séparé de velocity_angle via slip_angle (dérive réaliste)
-    - vitesse max effective = BASE_MAX_SPEED × grip
+    - vitesse max effective = BASE_MAX_SPEED x grip
     - accélération et freinage modulés par grip et niveau fuel
     - tout délégué à CarPhysics (envs/physics.py)
 
@@ -25,14 +25,14 @@ Changements par rapport à neuronal_env.py :
     distances lidar × n_rays | vitesse | usure | fuel | pluie | composé
 
   Collision GPU
-    - point-in-polygon vectorisé, zéro transfert CPU (correctif vs v1)
+    - point-in-polygon vectorisé, zéro transfert CPU 
     - AngularTrack  -> test dans polygone outer ET hors polygone inner
     - RectangularTrack -> AABB simple
     - fallback CPU si type inconnu (affiche un warning)
 
   Interface
     Identique à neuronal_env.py : reset / step / get_observations / get_render_data
-    -> TrainingLoop et circuits_loader_v2 n'ont rien à changer côté appel.
+    -> TrainingLoop et circuits_loader n'ont rien à changer côté appel.
     Nouveaux attributs publics : in_pit_zone (N,) bool, slip_angle (N, 1)
 """
 
@@ -191,7 +191,7 @@ class VectorizedCarEnv:
         else:
             self.track_type = 'unknown'
             print(
-                "[neuronal_env_v2] ⚠  Type de track inconnu - "
+                "[neuronal_env_v2] Warning  Type de track inconnu - "
                 "fallback CPU pour la détection de collision (lent)."
             )
 

@@ -1,5 +1,5 @@
 """
-neural_network_v2.py — Réseau de neurones avec physique réaliste
+neural_network_physic.py — Réseau de neurones avec physique réaliste
 ================================================================
 
 Changements par rapport à neural_network.py :
